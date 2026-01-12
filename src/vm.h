@@ -1,6 +1,8 @@
 #ifndef VM_H
 #define VM_H
 
+#include <stdbool.h>
+
 #define VM_STACK_SIZE (256)
 
 typedef enum {
@@ -8,12 +10,28 @@ typedef enum {
     OP_ADD,         // Pop two, push sum
     OP_SUB,         // Pop two, push second - first
     OP_MUL,         // Pop two, push product
-    OP_PRINT_INT,   // Print top of stack as integer, without popping
+    OP_DIV,         // Pop two, push second / first (runtime error if first = 0)
+    OP_PRINT,       // Print top of stack without popping
     OP_HALT         // Stop execution
 } OpCode;
 
+typedef enum {
+    VAL_NUMBER,
+    VAL_BOOL,
+    VAL_CHAR
+} ValueType;
+
 typedef struct {
-    int *stack;
+    ValueType type;
+    union {
+        double number;
+        bool boolean;
+        char character;
+    } as;
+} Value;
+
+typedef struct {
+    Value *stack;
     int stack_size;
     int sp; // Stack pointer
     unsigned char *code;
