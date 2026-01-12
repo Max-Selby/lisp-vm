@@ -30,7 +30,7 @@ void stack_push_number(VM *vm, double num) {
     vm->sp++;
 }
 
-int stack_pop(VM *vm) {
+Value stack_pop(VM *vm) {
     vm->sp--;
     return vm->stack[vm->sp];
 }
