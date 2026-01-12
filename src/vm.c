@@ -22,10 +22,23 @@ void vm_free(VM *vm) {
     free(vm);
 }
 
+Value stack_push_value(VM *vm, Value value) {
+    vm->stack[vm->sp] = value;
+    vm->sp++;
+}
+
 void stack_push_number(VM *vm, double num) {
     Value val;
     val.type = VAL_NUMBER;
     val.as.number = num;
+    vm->stack[vm->sp] = val;
+    vm->sp++;
+}
+
+void stack_push_bool(VM *vm, bool b) {
+    Value val;
+    val.type = VAL_BOOL;
+    val.as.boolean = b;
     vm->stack[vm->sp] = val;
     vm->sp++;
 }
@@ -52,9 +65,25 @@ void vm_execute(VM *vm) {
         OpCode instruction = (OpCode)code_get_next(vm);
 
         switch (instruction) {
-            case OP_PUSH: {
-                Value val = (double)code_get_next(vm);
-                stack_push_number(vm, val);
+            case OP_PUSH_NUM: {
+                Value val;
+                val.type = VAL_NUMBER;
+                val.as.number = (double)code_get_next(vm);
+                stack_push_value(vm, val);
+                break;
+            }
+            case OP_PUSH_BOOL: {
+                Value val;
+                val.type = VAL_BOOL;
+                val.as.boolean = (bool)code_get_next(vm);
+                stack_push_value(vm, val);
+                break;
+            }
+            case OP_PUSH_CHAR: {
+                Value val;
+                val.type = VAL_CHAR;
+                val.as.character = (char)code_get_next(vm);
+                stack_push_value(vm, val);
                 break;
             }
             case OP_ADD: {
@@ -103,6 +132,38 @@ void vm_execute(VM *vm) {
                 }
 
                 stack_push_number(vm, b.as.number / a.as.number); // second / first
+            }
+            case OP_LOGIC_AND: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (a.type != VAL_BOOL || b.type != VAL_BOOL) {
+                    runtime_error("Cannot perform boolean algebra on non-boolean!");
+                }
+
+                stack_push_number(vm, a.as.boolean && b.as.boolean);
+                break;
+            }
+            case OP_LOGIC_OR: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (a.type != VAL_BOOL || b.type != VAL_BOOL) {
+                    runtime_error("Cannot perform boolean algebra on non-boolean!");
+                }
+
+                stack_push_number(vm, a.as.boolean || b.as.boolean);
+                break;
+            }
+            case OP_LOGIC_NOT: {
+                Value a = stack_pop(vm);
+
+                if (a.type != VAL_BOOL) {
+                    runtime_error("Cannot perform boolean algebra on non-boolean!");
+                }
+
+                stack_push_number(vm, !a.as.boolean);
+                break;
             }
             case OP_PRINT: {
                 Value val = vm->stack[vm->sp - 1];

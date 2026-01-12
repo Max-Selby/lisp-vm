@@ -6,11 +6,16 @@
 #define VM_STACK_SIZE (256)
 
 typedef enum {
-    OP_PUSH,        // Push constant onto the stack
+    OP_PUSH_NUM,    // Push double onto the stack
+    OP_PUSH_BOOL,   // Push boolean onto the stack
+    OP_PUSH_CHAR,   // Push character onto the stack
     OP_ADD,         // Pop two, push sum
     OP_SUB,         // Pop two, push second - first
     OP_MUL,         // Pop two, push product
     OP_DIV,         // Pop two, push second / first (runtime error if first = 0)
+    OP_LOGIC_AND,   // Pop two, push a && b
+    OP_LOGIC_OR,    // Pop two, push a || b
+    OP_LOGIC_NOT,   // Pop a value, push !value
     OP_PRINT,       // Print top of stack without popping
     OP_HALT         // Stop execution
 } OpCode;
