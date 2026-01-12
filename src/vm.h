@@ -8,7 +8,7 @@ typedef enum {
     OP_ADD,         // Pop two, push sum
     OP_SUB,         // Pop two, push second - first
     OP_MUL,         // Pop two, push product
-    OP_PRINT,       // Print top of stack
+    OP_PRINT_INT,   // Print top of stack as integer, without popping
     OP_HALT         // Stop execution
 } OpCode;
 
