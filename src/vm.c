@@ -162,7 +162,7 @@ void vm_execute(VM *vm) {
                     case VAL_BOOL:
                         printf(val.as.bool == true ? "true" : "false");
                         break;
-                    case VAL_CHAR:
+                    case VAL_STRING:
                         printf("%s", val.as.string);
                         break;
                 }
