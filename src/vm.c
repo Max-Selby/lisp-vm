@@ -82,7 +82,7 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot perform arithmetic on non-number!");
                 }
 
-                stack_push_number(a.as.number + b.as.number);
+                stack_push_number(vm, a.as.number + b.as.number);
                 break;
             }
             case OP_SUB: {
@@ -120,6 +120,7 @@ void vm_execute(VM *vm) {
                 }
 
                 stack_push_number(vm, b.as.number / a.as.number); // second / first
+                break;
             }
             case OP_LOGIC_AND: {
                 Value a = stack_pop(vm);
@@ -157,10 +158,10 @@ void vm_execute(VM *vm) {
                 Value val = vm->stack[vm->sp - 1];
                 switch (val.type) {
                     case VAL_NUMBER:
-                        printf("%d", val.as.number);
+                        printf("%f", val.as.number);
                         break;
                     case VAL_BOOL:
-                        printf(val.as.bool == true ? "true" : "false");
+                        printf(val.as.boolean == true ? "true" : "false");
                         break;
                     case VAL_STRING:
                         printf("%s", val.as.string);

@@ -36,7 +36,7 @@ typedef struct {
 typedef struct {
     OpCode opCode;
     Value operand;
-} Instruction
+} Instruction;
 
 typedef struct {
     Value *stack;
