@@ -6,9 +6,7 @@
 #define VM_STACK_SIZE (256)
 
 typedef enum {
-    OP_PUSH_NUM,    // Push double onto the stack
-    OP_PUSH_BOOL,   // Push boolean onto the stack
-    OP_PUSH_CHAR,   // Push character onto the stack
+    OP_PUSH,        // Push value onto the stack
     OP_ADD,         // Pop two, push sum
     OP_SUB,         // Pop two, push second - first
     OP_MUL,         // Pop two, push product
@@ -23,7 +21,7 @@ typedef enum {
 typedef enum {
     VAL_NUMBER,
     VAL_BOOL,
-    VAL_CHAR
+    VAL_STRING
 } ValueType;
 
 typedef struct {
@@ -31,15 +29,20 @@ typedef struct {
     union {
         double number;
         bool boolean;
-        char character;
+        char *string;
     } as;
 } Value;
+
+typedef struct {
+    OpCode opCode;
+    Value operand;
+} Instruction
 
 typedef struct {
     Value *stack;
     int stack_size;
     int sp; // Stack pointer
-    unsigned char *code;
+    Instruction *code;
     int pc; // Program counter
 } VM;
 

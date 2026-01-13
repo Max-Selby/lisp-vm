@@ -22,7 +22,7 @@ void vm_free(VM *vm) {
     free(vm);
 }
 
-Value stack_push_value(VM *vm, Value value) {
+void stack_push_value(VM *vm, Value value) {
     vm->stack[vm->sp] = value;
     vm->sp++;
 }
@@ -31,16 +31,21 @@ void stack_push_number(VM *vm, double num) {
     Value val;
     val.type = VAL_NUMBER;
     val.as.number = num;
-    vm->stack[vm->sp] = val;
-    vm->sp++;
+    stack_push_value(vm, val);
+}
+
+void stack_push_string(VM *vm, char *st) {
+    Value val;
+    val.type = VAL_STRING;
+    val.as.string = st;
+    stack_push_value(vm, val);
 }
 
 void stack_push_bool(VM *vm, bool b) {
     Value val;
     val.type = VAL_BOOL;
     val.as.boolean = b;
-    vm->stack[vm->sp] = val;
-    vm->sp++;
+    stack_push_value(vm, val);
 }
 
 Value stack_pop(VM *vm) {
@@ -48,10 +53,10 @@ Value stack_pop(VM *vm) {
     return vm->stack[vm->sp];
 }
 
-unsigned char code_get_next(VM *vm) {
-    unsigned char value = vm->code[vm->pc];
+Instruction code_get_next(VM *vm) {
+    Instruction insn = vm->code[vm->pc];
     vm->pc++;
-    return value;
+    return insn;
 }
 
 void runtime_error(char *msg) {
@@ -62,28 +67,11 @@ void runtime_error(char *msg) {
 void vm_execute(VM *vm) {
     while (true) {
         // Get the current instruction and increment the PC
-        OpCode instruction = (OpCode)code_get_next(vm);
+        Instruction instruction = code_get_next(vm);
 
-        switch (instruction) {
-            case OP_PUSH_NUM: {
-                Value val;
-                val.type = VAL_NUMBER;
-                val.as.number = (double)code_get_next(vm);
-                stack_push_value(vm, val);
-                break;
-            }
-            case OP_PUSH_BOOL: {
-                Value val;
-                val.type = VAL_BOOL;
-                val.as.boolean = (bool)code_get_next(vm);
-                stack_push_value(vm, val);
-                break;
-            }
-            case OP_PUSH_CHAR: {
-                Value val;
-                val.type = VAL_CHAR;
-                val.as.character = (char)code_get_next(vm);
-                stack_push_value(vm, val);
+        switch (instruction.opCode) {
+            case OP_PUSH: {
+                stack_push_value(vm, instruction.operand);
                 break;
             }
             case OP_ADD: {
@@ -175,7 +163,7 @@ void vm_execute(VM *vm) {
                         printf(val.as.bool == true ? "true" : "false");
                         break;
                     case VAL_CHAR:
-                        printf("%c", val.as.character);
+                        printf("%s", val.as.string);
                         break;
                 }
                 
