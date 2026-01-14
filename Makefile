@@ -4,7 +4,7 @@ CFLAGS := -Wall -Wextra -O2 -I./src
 SRC_DIR := src
 BUILD_DIR := build
 
-SRCS := $(SRC_DIR)/main.c $(SRC_DIR)/vm.c
+SRCS := $(SRC_DIR)/main.c $(SRC_DIR)/vm.c $(SRC_DIR)/vmstring.c
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
 TARGET := $(BUILD_DIR)/program

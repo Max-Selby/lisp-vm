@@ -1,5 +1,10 @@
 #include "vm.h"
+#include "vmstring.h"
 
+#include <stdio.h>
+#include <stdbool.h>
+
+// This is all testing, should be removed later
 int main(void) {
     VM *vm = vm_create();
     vm->code = (Instruction[]){
@@ -11,5 +16,15 @@ int main(void) {
         {OP_HALT, {0}}
     };
     vm_execute(vm);
+
+    String s;
+    printf("\n");
+    string_init_from(&s, "hello\n");
+    printf(s.data);
+    if (!string_substr(&s, 0, 2)) {
+        printf("Failure!\n");
+    }
+    printf(s.data);
+    string_free(&s);
 }
 
