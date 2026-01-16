@@ -19,5 +19,9 @@ int main(void) {
         {OP_HALT, {0}}
     };
     vm_execute(vm);
+
+    // VM is not responsible for freeing strings, and so it never will
+    string_free(&s2);
+    string_free(&s1);
 }
 

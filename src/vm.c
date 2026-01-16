@@ -186,8 +186,6 @@ void vm_execute(VM *vm) {
 
                 stack_push_string(vm, a.as.string);
 
-                string_free(b.as.string);
-
                 break;
             }
             case OP_SUBSTR: {
