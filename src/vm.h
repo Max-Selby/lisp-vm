@@ -1,6 +1,8 @@
 #ifndef VM_H
 #define VM_H
 
+#include "vmstring.h"
+
 #include <stdbool.h>
 
 #define VM_STACK_SIZE (256)
@@ -15,6 +17,8 @@ typedef enum {
     OP_LOGIC_OR,    // Pop two, push a || b
     OP_LOGIC_NOT,   // Pop a value, push !value
     OP_PRINT,       // Print top of stack without popping
+    OP_CONCATSTR,   // Pop a & b, push string concatenation of a + b
+    OP_SUBSTR,      // Pop a, b, c, push substring of a starting at b, of length c
     OP_HALT         // Stop execution
 } OpCode;
 
@@ -29,7 +33,7 @@ typedef struct {
     union {
         double number;
         bool boolean;
-        char *string;
+        String *string;
     } as;
 } Value;
 

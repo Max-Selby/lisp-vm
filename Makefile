@@ -1,5 +1,6 @@
 CC := gcc
 CFLAGS := -Wall -Wextra -O2 -I./src
+LDFLAGS := -lm
 
 SRC_DIR := src
 TEST_DIR := tests
@@ -26,11 +27,11 @@ test: $(TEST_TARGET)
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(OBJS) -o $@
+	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
 $(TEST_TARGET): $(TEST_OBJS) $(CORE_OBJS)
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(TEST_OBJS) $(CORE_OBJS) -o $@
+	$(CC) $(TEST_OBJS) $(CORE_OBJS) -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)

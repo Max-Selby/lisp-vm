@@ -1,13 +1,12 @@
 #include "test_vmstring.h"
 
-#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
 #include "testutil.h"
 #include "vmstring.h"
 
-const char *TAG_VMSTRING = "VMSTRING";
+const char *TAG_VMSTRING = "TEST_VMSTRING";
 
 int testGenerate() {
     int failed = 0;

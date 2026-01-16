@@ -34,7 +34,7 @@ void stack_push_number(VM *vm, double num) {
     stack_push_value(vm, val);
 }
 
-void stack_push_string(VM *vm, char *st) {
+void stack_push_string(VM *vm, String *st) {
     Value val;
     val.type = VAL_STRING;
     val.as.string = st;
@@ -164,10 +164,66 @@ void vm_execute(VM *vm) {
                         printf(val.as.boolean == true ? "true" : "false");
                         break;
                     case VAL_STRING:
-                        printf("%s", val.as.string);
+                        printf("%s", val.as.string->data);
                         break;
                 }
                 
+                break;
+            }
+            case OP_CONCATSTR: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (a.type != VAL_STRING || b.type != VAL_STRING) {
+                    runtime_error("Cannot concatenate non-strings!");
+                }
+                
+                bool success = string_append(a.as.string, b.as.string->data);
+
+                if (!success) {
+                    runtime_error("String append failed!");
+                }
+
+                stack_push_string(vm, a.as.string);
+
+                string_free(b.as.string);
+
+                break;
+            }
+            case OP_SUBSTR: {
+                Value s = stack_pop(vm);
+                Value start = stack_pop(vm);
+                Value length = stack_pop(vm);
+
+                if (s.type != VAL_STRING) {
+                    runtime_error("Cannot take substring of non-string!");
+                }
+
+                if (start.type != VAL_NUMBER || length.type != VAL_NUMBER) {
+                    runtime_error("Start and length of substring must be numbers!");
+                }
+
+                double rStart = round(start.as.number);
+                double rLength = round(length.as.number);
+                if (
+                    start.as.number - EPSILON > rStart || start.as.number + EPSILON < rStart ||
+                    length.as.number - EPSILON > rLength || length.as.number + EPSILON < rLength
+                ) {
+                    runtime_error("Start and length of substring must be integers!");
+                }
+
+                if (start.as.number < 0 || length.as.number < 0) {
+                    runtime_error("Start and length of substring may not be negative!");
+                }
+
+                bool success = string_substr(s.as.string, (size_t)rStart, (size_t)rLength);
+
+                if (!success) {
+                    runtime_error("String substring failed!");
+                }
+
+                stack_push_string(vm, s.as.string);
+
                 break;
             }
             case OP_HALT: {
