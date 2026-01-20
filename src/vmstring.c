@@ -69,3 +69,15 @@ void string_free(String *s) {
     s->cap = 0;
 }
 
+bool string_equal(String *s1, String *s2, bool *equiv) {
+    if (!s1 || !s2) return false;
+    if (!s1->data || !s2->data) return false;
+    equiv = strcmp(s1->data, s2->data) == 0;
+    return true;
+}
+
+bool string_length(String *s, int *len) {
+    if (!s || !s->data) return false;
+    len = (int)strlen(s->data);
+    return true;    
+}

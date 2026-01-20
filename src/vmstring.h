@@ -48,5 +48,23 @@ bool string_substr(String *s, size_t start, size_t length);
  */
 void string_free(String *s);
 
+/**
+ * Given two strings, set a boolean to true if
+ * they are equal
+ * @param s1 First string
+ * @param s2 Second string
+ * @param equiv True if equal, false otherwise
+ * @returns **ERROR CODE, NOT THE ANSWER** True on success, false on failure
+ */
+bool string_equal(String *s1, String *s2, bool *equiv);
+
+/**
+ * Given a string, return its integer length
+ * @param s The string
+ * @param len The length to set
+ * @returns True on success, false on failure
+ */
+bool string_length(String *s, int *len);
+
 #endif // VMSTRING_H
 

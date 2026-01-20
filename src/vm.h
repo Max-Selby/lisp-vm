@@ -28,9 +28,12 @@ typedef enum {
     OP_LTE,         // Pop two numbers, push boolean first <= second
     OP_GT,          // Pop two numbers, push boolean first > second
     OP_GTE,         // Pop two numbers, push boolean first >= second
-    OP_JMP,
-    OP_JMP_IF,      
     OP_STR_EQ,      // Pop two, push boolean true if they are equivalent strings, else push false.
+    OP_STRLEN,      // Pop a string, push its integer length
+    OP_JMP,         // Pop an integer, jump to the instruction at that address
+    OP_JMP_IF,      // Pop an integer then a bool. If the bool is true, jump.
+    OP_INT2FLOAT,   // Pop an int, push float representation of its value
+    OP_FLOAT2INT,   // Pop a float, push integer representation of its value
     OP_HALT         // Stop execution
 } OpCode;
 

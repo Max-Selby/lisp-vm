@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <limits.h>
 
 #define EPSILON (1e-12)
 
@@ -96,8 +97,8 @@ void vm_execute(VM *vm) {
                     stack_push_integer(vm, a.as.integer + b.as.integer);
                 }
                 else {
-                    float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
-                    float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
+                    double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                    double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                     stack_push_float(vm, anum + bnum);
                 }
@@ -120,8 +121,8 @@ void vm_execute(VM *vm) {
                     stack_push_integer(vm, b.as.integer - a.as.integer); 
                 }
                 else {
-                    float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
-                    float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
+                    double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                    double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                     stack_push_float(vm, bnum - anum);
                 }
@@ -143,8 +144,8 @@ void vm_execute(VM *vm) {
                     stack_push_integer(vm, a.as.integer * b.as.integer);
                 }
                 else {
-                    float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
-                    float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
+                    double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                    double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                     stack_push_float(vm, anum * bnum);
                 }
@@ -161,8 +162,8 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot perform arithmetic on non-number!");
                 }
 
-                float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
-                float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
+                double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                 if (fabs(bnum) < EPSILON) {
                     runtime_error("Division by 0!");
@@ -278,6 +279,108 @@ void vm_execute(VM *vm) {
                 stack_push_value(vm, a);
                 stack_push_value(vm, a);
                 break;
+            }
+            case OP_STR_EQ: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (a.type != VAL_STRING || b.type != VAL_STRING) {
+                    runtime_error("Tried to check string equivalence of non-strings!");
+                }
+
+                bool equiv;
+                bool success = string_equal(a.as.string, b.as.string, &equiv);
+
+                if (!success) {
+                    runtime_error("String equal failed! Strings were probably not initialized.");
+                }
+
+                stack_push_bool(vm, equiv);
+                break;
+            }
+            case OP_STRLEN: {
+                Value a = stack_pop(vm);
+
+                if (a.type != VAL_STRING) {
+                    runtime_error("Tried to get string length of non-string!");
+                }
+
+                int len;
+                bool success = string_length(a.as.string, &len);
+
+                if (!success) {
+                    runtime_error("String length failed! String was probably not initialized.");
+                }
+
+                stack_push_integer(vm, len);
+                break;
+            }
+            case OP_JMP: {
+                Value a = stack_pop(vm);
+
+                if (a.type != VAL_INTEGER) {
+                    runtime_error("Cannot jump to non-integer address!");
+                }
+                if (a.as.integer < 0) {
+                    runtime_error("Cannot jump to negative address!");
+                }
+                
+                // Jump there. Don't have to worry about PC increasing, since that happens at the
+                // beginning of the loop AFTER grabbing the instruction
+                vm->pc = a.as.integer;
+                break;
+            }
+            case OP_JMP_IF: {
+                Value a = stack_pop(vm);
+                Value condition = stack_pop(vm);
+
+                if (a.type != VAL_INTEGER) {
+                    runtime_error("Cannot jump to non-integer address!");
+                }
+                if (a.as.integer < 0) {
+                    runtime_error("Cannot jump to negative address!");
+                }
+                if (condition.type != VAL_BOOL) {
+                    runtime_error("Conditional jump failed: wrong condition type (should be boolean)");
+                }
+                
+                if (condition.as.boolean) {
+                    vm->pc = a.as.integer;
+                }
+                break;
+            }
+            case OP_INT2FLOAT: {
+                Value a = stack_pop(vm);
+
+                if (a.type == VAL_FLOAT) {
+                    stack_push_float(vm, a.as.floating);
+                }
+                else if (a.type == VAL_INTEGER) {
+                    stack_push_float(vm, (double)a.as.integer);
+                }
+                else {
+                    runtime_error("Cannot convert non-number to float!");
+                }
+                
+                break;
+            }
+            case OP_FLOAT2INT: {
+                Value a = stack_pop(vm);
+
+                if (a.type == VAL_INTEGER) {
+                    stack_push_integer(vm, a.as.integer);
+                }
+                else if (a.type == VAL_FLOAT) {
+                    if (INT_MIN <= a.as.floating <= INT_MAX) {
+                        stack_push_integer(vm, (int)a.as.floating);
+                    }
+                    else {
+                        runtime_error("This float is too big for integer conversion!");
+                    }
+                }
+                else {
+                    runtime_error("Cannot convert non-number to integer!");
+                }
             }
             case OP_HALT: {
                 return;
