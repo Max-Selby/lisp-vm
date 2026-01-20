@@ -72,12 +72,12 @@ void string_free(String *s) {
 bool string_equal(String *s1, String *s2, bool *equiv) {
     if (!s1 || !s2) return false;
     if (!s1->data || !s2->data) return false;
-    equiv = strcmp(s1->data, s2->data) == 0;
+    *equiv = (strcmp(s1->data, s2->data) == 0);
     return true;
 }
 
 bool string_length(String *s, int *len) {
     if (!s || !s->data) return false;
-    len = (int)strlen(s->data);
+    *len = (int)strlen(s->data);
     return true;    
 }

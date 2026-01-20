@@ -280,6 +280,110 @@ void vm_execute(VM *vm) {
                 stack_push_value(vm, a);
                 break;
             }
+            case OP_SWAP: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                stack_push_value(vm, a);
+                stack_push_value(vm, b);
+                break;
+            }
+            case OP_EQ: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) ||
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
+                    runtime_error("Cannot compare equality of non-numbers!");
+                }
+
+                double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
+
+                stack_push_bool(vm, anum == bnum);
+            }
+            case OP_NEQ: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) ||
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
+                    runtime_error("Cannot compare equality of non-numbers!");
+                }
+
+                double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
+
+                stack_push_bool(vm, anum != bnum);
+            }
+            case OP_LT: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) ||
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
+                    runtime_error("Cannot compare equality of non-numbers!");
+                }
+
+                double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
+
+                stack_push_bool(vm, anum < bnum);
+            }
+            case OP_LTE: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) ||
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
+                    runtime_error("Cannot compare equality of non-numbers!");
+                }
+
+                double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
+
+                stack_push_bool(vm, anum <= bnum);
+            }
+            case OP_GT: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) ||
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
+                    runtime_error("Cannot compare equality of non-numbers!");
+                }
+
+                double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
+
+                stack_push_bool(vm, anum > bnum);
+            }
+            case OP_GTE: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) ||
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
+                    runtime_error("Cannot compare equality of non-numbers!");
+                }
+
+                double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
+                double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
+
+                stack_push_bool(vm, anum >= bnum);
+            }
             case OP_STR_EQ: {
                 Value a = stack_pop(vm);
                 Value b = stack_pop(vm);
@@ -371,7 +475,7 @@ void vm_execute(VM *vm) {
                     stack_push_integer(vm, a.as.integer);
                 }
                 else if (a.type == VAL_FLOAT) {
-                    if (INT_MIN <= a.as.floating <= INT_MAX) {
+                    if ((INT_MIN <= a.as.floating) && (a.as.floating <= INT_MAX)) {
                         stack_push_integer(vm, (int)a.as.floating);
                     }
                     else {

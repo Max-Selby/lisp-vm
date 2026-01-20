@@ -9,7 +9,7 @@ BUILD_DIR := build
 # Main
 SRCS := $(SRC_DIR)/main.c $(SRC_DIR)/vm.c $(SRC_DIR)/vmstring.c
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
-TARGET := $(BUILD_DIR)/program
+TARGET := $(BUILD_DIR)/lvm
 
 # Tests
 TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
