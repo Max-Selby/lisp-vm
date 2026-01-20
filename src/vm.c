@@ -27,10 +27,17 @@ void stack_push_value(VM *vm, Value value) {
     vm->sp++;
 }
 
-void stack_push_number(VM *vm, double num) {
+void stack_push_integer(VM *vm, int num) {
     Value val;
-    val.type = VAL_NUMBER;
-    val.as.number = num;
+    val.type = VAL_INTEGER;
+    val.as.integer = num;
+    stack_push_value(vm, val);
+}
+
+void stack_push_float(VM *vm, double num) {
+    Value val;
+    val.type = VAL_FLOAT;
+    val.as.floating = num;
     stack_push_value(vm, val);
 }
 
@@ -78,48 +85,92 @@ void vm_execute(VM *vm) {
                 Value a = stack_pop(vm);
                 Value b = stack_pop(vm);
 
-                if (a.type != VAL_NUMBER || b.type != VAL_NUMBER) {
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) || 
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
                     runtime_error("Cannot perform arithmetic on non-number!");
                 }
+                
+                if (a.type == VAL_INTEGER && b.type == VAL_INTEGER) {
+                    stack_push_integer(vm, a.as.integer + b.as.integer);
+                }
+                else {
+                    float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
+                    float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
 
-                stack_push_number(vm, a.as.number + b.as.number);
+                    stack_push_float(vm, anum + bnum);
+                }
+
                 break;
             }
             case OP_SUB: {
                 Value a = stack_pop(vm);
                 Value b = stack_pop(vm);
 
-                if (a.type != VAL_NUMBER || b.type != VAL_NUMBER) {
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) || 
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
                     runtime_error("Cannot perform arithmetic on non-number!");
                 }
 
-                stack_push_number(vm, b.as.number - a.as.number); // second - first
+                // second - first
+                if (a.type == VAL_INTEGER && b.type == VAL_INTEGER) {
+                    stack_push_integer(vm, b.as.integer - a.as.integer); 
+                }
+                else {
+                    float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
+                    float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
+
+                    stack_push_float(vm, bnum - anum);
+                }
+                
                 break;
             }
             case OP_MUL: {
                 Value a = stack_pop(vm);
                 Value b = stack_pop(vm);
 
-                if (a.type != VAL_NUMBER || b.type != VAL_NUMBER) {
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) || 
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
                     runtime_error("Cannot perform arithmetic on non-number!");
                 }
 
-                stack_push_number(vm, a.as.number * b.as.number);
+                if (a.type == VAL_INTEGER && b.type == VAL_INTEGER) {
+                    stack_push_integer(vm, a.as.integer * b.as.integer);
+                }
+                else {
+                    float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
+                    float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
+
+                    stack_push_float(vm, anum * bnum);
+                }
                 break;
             }
             case OP_DIV: {
                 Value a = stack_pop(vm);
                 Value b = stack_pop(vm);
 
-                if (a.type != VAL_NUMBER || b.type != VAL_NUMBER) {
+                if (
+                    (a.type != VAL_INTEGER && a.type != VAL_FLOAT) || 
+                    (b.type != VAL_INTEGER && b.type != VAL_FLOAT)
+                ) {
                     runtime_error("Cannot perform arithmetic on non-number!");
                 }
 
-                if (fabs(a.as.number) < EPSILON) {
+                float anum = (a.type == VAL_INTEGER) ? (float)a.as.integer : a.as.floating;
+                float bnum = (b.type == VAL_INTEGER) ? (float)b.as.integer : b.as.floating;
+
+                if (fabs(bnum) < EPSILON) {
                     runtime_error("Division by 0!");
                 }
 
-                stack_push_number(vm, b.as.number / a.as.number); // second / first
+                // second / first
+                stack_push_float(vm, bnum / anum);
+                
                 break;
             }
             case OP_LOGIC_AND: {
@@ -130,7 +181,7 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot perform boolean algebra on non-boolean!");
                 }
 
-                stack_push_number(vm, a.as.boolean && b.as.boolean);
+                stack_push_bool(vm, a.as.boolean && b.as.boolean);
                 break;
             }
             case OP_LOGIC_OR: {
@@ -141,7 +192,7 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot perform boolean algebra on non-boolean!");
                 }
 
-                stack_push_number(vm, a.as.boolean || b.as.boolean);
+                stack_push_bool(vm, a.as.boolean || b.as.boolean);
                 break;
             }
             case OP_LOGIC_NOT: {
@@ -151,14 +202,17 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot perform boolean algebra on non-boolean!");
                 }
 
-                stack_push_number(vm, !a.as.boolean);
+                stack_push_bool(vm, !a.as.boolean);
                 break;
             }
             case OP_PRINT: {
                 Value val = vm->stack[vm->sp - 1];
                 switch (val.type) {
-                    case VAL_NUMBER:
-                        printf("%f", val.as.number);
+                    case VAL_INTEGER:
+                        printf("%d", val.as.integer);
+                        break;
+                    case VAL_FLOAT:
+                        printf("%f", val.as.floating);
                         break;
                     case VAL_BOOL:
                         printf(val.as.boolean == true ? "true" : "false");
@@ -197,24 +251,15 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot take substring of non-string!");
                 }
 
-                if (start.type != VAL_NUMBER || length.type != VAL_NUMBER) {
-                    runtime_error("Start and length of substring must be numbers!");
-                }
-
-                double rStart = round(start.as.number);
-                double rLength = round(length.as.number);
-                if (
-                    start.as.number - EPSILON > rStart || start.as.number + EPSILON < rStart ||
-                    length.as.number - EPSILON > rLength || length.as.number + EPSILON < rLength
-                ) {
+                if (start.type != VAL_INTEGER || length.type != VAL_INTEGER) {
                     runtime_error("Start and length of substring must be integers!");
                 }
 
-                if (start.as.number < 0 || length.as.number < 0) {
+                if (start.as.integer < 0 || length.as.integer < 0) {
                     runtime_error("Start and length of substring may not be negative!");
                 }
 
-                bool success = string_substr(s.as.string, (size_t)rStart, (size_t)rLength);
+                bool success = string_substr(s.as.string, (size_t)start.as.integer, (size_t)length.as.integer);
 
                 if (!success) {
                     runtime_error("String substring failed!");
@@ -222,6 +267,16 @@ void vm_execute(VM *vm) {
 
                 stack_push_string(vm, s.as.string);
 
+                break;
+            }
+            case OP_DISCARD: {
+                stack_pop(vm);
+                break;
+            }
+            case OP_DUP: {
+                Value a = stack_pop(vm);
+                stack_push_value(vm, a);
+                stack_push_value(vm, a);
                 break;
             }
             case OP_HALT: {
