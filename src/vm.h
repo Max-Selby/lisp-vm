@@ -5,7 +5,7 @@
 
 #include <stdbool.h>
 
-#define VM_STACK_SIZE (256)
+#define VM_STACK_SIZE (16384)
 
 typedef enum {
     OP_PUSH,        // Push value onto the stack

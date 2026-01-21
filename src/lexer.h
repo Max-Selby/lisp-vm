@@ -1,6 +1,10 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <stdbool.h>
+
+#include "vmstring.h"
+
 typedef enum {
     TOKEN_LPAREN,   // (
     TOKEN_RPAREN,   // )
@@ -14,7 +18,13 @@ typedef enum {
 
 typedef struct {
     TokenType type;
-    char *value;
+    union {
+        int integer;
+        double floating;
+        bool boolean;
+        String *string;
+        String *symbol; // Symbol names need to be saved
+    } as;
 } Token;
 
 typedef struct {

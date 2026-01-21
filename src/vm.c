@@ -303,6 +303,7 @@ void vm_execute(VM *vm) {
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                 stack_push_bool(vm, anum == bnum);
+                break;
             }
             case OP_NEQ: {
                 Value a = stack_pop(vm);
@@ -319,6 +320,7 @@ void vm_execute(VM *vm) {
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                 stack_push_bool(vm, anum != bnum);
+                break;
             }
             case OP_LT: {
                 Value a = stack_pop(vm);
@@ -335,6 +337,7 @@ void vm_execute(VM *vm) {
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                 stack_push_bool(vm, anum < bnum);
+                break;
             }
             case OP_LTE: {
                 Value a = stack_pop(vm);
@@ -351,6 +354,7 @@ void vm_execute(VM *vm) {
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                 stack_push_bool(vm, anum <= bnum);
+                break;
             }
             case OP_GT: {
                 Value a = stack_pop(vm);
@@ -367,6 +371,7 @@ void vm_execute(VM *vm) {
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                 stack_push_bool(vm, anum > bnum);
+                break;
             }
             case OP_GTE: {
                 Value a = stack_pop(vm);
@@ -383,6 +388,7 @@ void vm_execute(VM *vm) {
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
                 stack_push_bool(vm, anum >= bnum);
+                break;
             }
             case OP_STR_EQ: {
                 Value a = stack_pop(vm);
