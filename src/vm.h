@@ -13,6 +13,7 @@ typedef enum {
     OP_SUB,         // Pop two, push second - first
     OP_MUL,         // Pop two, push product
     OP_DIV,         // Pop two, push second / first (runtime error if first = 0)
+    OP_MOD,         // Pop two, push second % first (integers only, runtime error if first = 0)
     OP_LOGIC_AND,   // Pop two, push a && b
     OP_LOGIC_OR,    // Pop two, push a || b
     OP_LOGIC_NOT,   // Pop a value, push !value
@@ -76,4 +77,3 @@ void vm_free(VM *vm);
 void vm_execute(VM *vm);
 
 #endif // VM_H
-

@@ -219,6 +219,22 @@ void vm_execute(VM *vm) {
                 
                 break;
             }
+            case OP_MOD: {
+                Value a = stack_pop(vm);
+                Value b = stack_pop(vm);
+
+                if (a.type != VAL_INTEGER || b.type != VAL_INTEGER) {
+                    runtime_error("Cannot perform modulo on non-integer!");
+                }
+
+                if (a.as.integer == 0) {
+                    runtime_error("Modulo by 0!");
+                }
+
+                // second % first
+                stack_push_integer(vm, b.as.integer % a.as.integer);
+                break;
+            }
             case OP_LOGIC_AND: {
                 Value a = stack_pop(vm);
                 Value b = stack_pop(vm);
@@ -553,4 +569,3 @@ void vm_execute(VM *vm) {
         }
     }
 }
-
