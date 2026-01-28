@@ -388,6 +388,57 @@ int testMiscOps() {
     return failed;
 }
 
+int testControl() {
+    int failed = 0;
+    VM *vm = vm_create();
+
+    vm->code = (Instruction[]){
+        {OP_PUSH, {.type = VAL_INTEGER, .as.integer = 3}},
+        {OP_JMP, {}},
+        {OP_PUSH, {.type = VAL_FLOAT, .as.floating = 1.0}},
+        {OP_PUSH, {.type = VAL_FLOAT, .as.floating = 2.0}},
+        {OP_PUSH, {.type = VAL_BOOL, .as.boolean = true}},
+        {OP_PUSH, {.type = VAL_INTEGER, .as.integer = 8}},
+        {OP_JMP_IF, {}},
+        {OP_PUSH, {.type = VAL_FLOAT, .as.floating = 3.0}},
+        {OP_PUSH, {.type = VAL_FLOAT, .as.floating = 4.0}},
+        {OP_PUSH, {.type = VAL_BOOL, .as.boolean = false}},
+        {OP_PUSH, {.type = VAL_INTEGER, .as.integer = 12}},
+        {OP_JMP_IF, {}},
+        {OP_PUSH, {.type = VAL_FLOAT, .as.floating = 5.0}},
+        {OP_PUSH, {.type = VAL_FLOAT, .as.floating = 6.0}},
+        {OP_HALT, {}}
+    };
+    vm_execute(vm);
+
+    failed += test_assert(
+        vm->stack[0].type == VAL_FLOAT && vm->stack[0].as.floating == 2.0,
+        TAG_VM,
+        "After jump, first value is 2.0"
+    );
+
+    failed += test_assert(
+        vm->stack[1].type == VAL_FLOAT && vm->stack[1].as.floating == 4.0,
+        TAG_VM,
+        "After conditional jump, next value is 4.0"
+    );
+
+    failed += test_assert(
+        vm->stack[2].type == VAL_FLOAT && vm->stack[2].as.floating == 5.0,
+        TAG_VM,
+        "Conditional jump not triggered, next value is 5.0"
+    );
+
+    failed += test_assert(
+        vm->stack[3].type == VAL_FLOAT && vm->stack[3].as.floating == 6.0,
+        TAG_VM,
+        "Final value is 6.0"
+    );
+
+    vm_free(vm);
+    return failed;
+}
+
 int runVMTests() {
     int failed = 0;
     failed += testPushPop();
@@ -395,6 +446,7 @@ int runVMTests() {
     failed += testLogic();
     failed += testMath();
     failed += testMiscOps();
+    failed += testControl();
 
     if (failed > 0) {
         printf("%s: Tests failed: %d\n", TAG_VM, failed);
