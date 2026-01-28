@@ -14,11 +14,25 @@ VM* vm_create() {
     vm->stack = malloc(sizeof(Value) * vm->stack_size);
     vm->sp = 0;
     vm->pc = 0;
+    vm->debug = false;
+    vm->strings_cap = 8;
+    vm->strings_count = 0;
+    vm->strings = malloc(sizeof(String*) * vm->strings_cap);
     
     return vm;
 }
 
 void vm_free(VM *vm) {
+    if (vm->debug) {
+        printf("Freeing VM\n");
+    }
+    // Cleanup strings
+    for (size_t i = 0; i < vm->strings_count; i++) {
+        printf("String i: %d\n", (int)i);
+        string_free(vm->strings[i]);
+    }
+    free(vm->strings);
+
     free(vm->stack);
     free(vm);
 }
@@ -68,14 +82,45 @@ Instruction code_get_next(VM *vm) {
 }
 
 void runtime_error(char *msg) {
-    printf("Runtime error: %s", msg);
+    printf("Runtime error: %s\n", msg);
     exit(1);
+}
+
+String *vm_string_new(VM *vm) {
+    if (vm->strings_count == vm->strings_cap) {
+        size_t new_cap = vm->strings_cap * 2;
+        String **tmp = realloc(vm->strings, new_cap * sizeof *vm->strings);
+        if (!tmp) {
+            runtime_error("Unable to allocate space for new strings");
+        }
+        vm->strings = tmp;
+        vm->strings_cap = new_cap;
+    }
+
+    String *s = string_create();
+    if (!s) {
+        runtime_error("Unable to create new string");
+    }
+    vm->strings[vm->strings_count] = s;
+    if (vm->debug) {
+        printf("Allocated string at index %d\n", (int)vm->strings_count);
+    }
+    vm->strings_count++;
+
+    return s;
 }
 
 void vm_execute(VM *vm) {
     while (true) {
+        if (vm->debug) {
+            printf("=> PC: %d\n", vm->pc);
+        }
         // Get the current instruction and increment the PC
         Instruction instruction = code_get_next(vm);
+
+        if (vm->debug) {
+            printf("insn num: %d\n", instruction.opCode);
+        }
 
         switch (instruction.opCode) {
             case OP_PUSH: {
@@ -233,13 +278,14 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot concatenate non-strings!");
                 }
                 
-                bool success = string_append(a.as.string, b.as.string->data);
+                String *new = string_copy(a.as.string);
+                bool success = string_append(new, b.as.string->data);
 
                 if (!success) {
                     runtime_error("String append failed!");
                 }
 
-                stack_push_string(vm, a.as.string);
+                stack_push_string(vm, new);
 
                 break;
             }
@@ -260,13 +306,14 @@ void vm_execute(VM *vm) {
                     runtime_error("Start and length of substring may not be negative!");
                 }
 
-                bool success = string_substr(s.as.string, (size_t)start.as.integer, (size_t)length.as.integer);
+                String *new = string_copy(s.as.string);
+                bool success = string_substr(new, (size_t)start.as.integer, (size_t)length.as.integer);
 
                 if (!success) {
                     runtime_error("String substring failed!");
                 }
 
-                stack_push_string(vm, s.as.string);
+                stack_push_string(vm, new);
 
                 break;
             }
@@ -276,8 +323,15 @@ void vm_execute(VM *vm) {
             }
             case OP_DUP: {
                 Value a = stack_pop(vm);
-                stack_push_value(vm, a);
-                stack_push_value(vm, a);
+                if (a.type == VAL_STRING) {
+                    String *new = string_copy(a.as.string);
+                    stack_push_value(vm, a);
+                    stack_push_string(vm, new);
+                }
+                else {
+                    stack_push_value(vm, a);
+                    stack_push_value(vm, a);
+                }
                 break;
             }
             case OP_SWAP: {
@@ -491,6 +545,7 @@ void vm_execute(VM *vm) {
                 else {
                     runtime_error("Cannot convert non-number to integer!");
                 }
+                break;
             }
             case OP_HALT: {
                 return;

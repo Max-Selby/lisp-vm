@@ -10,178 +10,180 @@ const char *TAG_VMSTRING = "TEST_VMSTRING";
 
 int testGenerate() {
     int failed = 0;
+    String *s;
 
     // Can create a string
-    String s;
+    s = string_create();
     failed += test_assert(
-        string_init(&s),
+        s != NULL,
         TAG_VMSTRING,
         "Initialize String"
     );
     failed += test_assert(
-        strcmp(s.data, "") == 0,
+        strcmp(s->data, "") == 0,
         TAG_VMSTRING,
         "Ensure String holds value ''"
     );
-    string_free(&s);
+    string_free(s);
 
     // Can create a string from text
+    s = string_create_from("");
     failed += test_assert(
-        string_init_from(&s, ""),
+        s != NULL,
         TAG_VMSTRING,
         "Initialize String from empty string"
     );
     failed += test_assert(
-        strcmp(s.data, "") == 0,
+        strcmp(s->data, "") == 0,
         TAG_VMSTRING,
         "Ensure String holds value ''"
     );
-    string_free(&s);
+    string_free(s);
 
+    s = string_create_from("abc");
     failed += test_assert(
-        string_init_from(&s, "abc"),
+        s != NULL,
         TAG_VMSTRING,
         "Initialize String from 'abc'"
     );
     failed += test_assert(
-        strcmp(s.data, "abc") == 0,
+        strcmp(s->data, "abc") == 0,
         TAG_VMSTRING,
         "Ensure String holds value 'abc'"
     );
-    string_free(&s);
+    string_free(s);
 
+    s = string_create_from("a");
     failed += test_assert(
-        string_init_from(&s, "a"),
+        s != NULL,
         TAG_VMSTRING,
         "Initialize String from 'a'"
     );
     failed += test_assert(
-        strcmp(s.data, "a") == 0,
+        strcmp(s->data, "a") == 0,
         TAG_VMSTRING,
         "Ensure String holds value 'a'"
     );
-    string_free(&s);
-
+    string_free(s);
     return failed;
 }
 
 int testAppend() {
     int failed = 0;
-    String s;
+    String *s;
 
     // Can append to existing
-    string_init_from(&s, "abc");
+    s = string_create_from("abc");
     failed += test_assert(
-        string_append(&s, "def"),
+        string_append(s, "def"),
         TAG_VMSTRING,
         "Append 'def' to String 'abc'"
     );
     failed += test_assert(
-        strcmp(s.data, "abcdef") == 0,
+        strcmp(s->data, "abcdef") == 0,
         TAG_VMSTRING,
         "Ensure String holds value 'abcdef'"
     );
-    string_free(&s);
+    string_free(s);
 
     // Can append to empty
-    string_init(&s);
+    s = string_create();
     failed += test_assert(
-        string_append(&s, "def"),
+        string_append(s, "def"),
         TAG_VMSTRING,
         "Append 'def' to String ''"
     );
     failed += test_assert(
-        strcmp(s.data, "def") == 0,
+        strcmp(s->data, "def") == 0,
         TAG_VMSTRING,
         "Ensure String holds value 'def'"
     );
-    string_free(&s);
-
+    string_free(s);
     return failed;
 }
 
 int testSubstring() {
     int failed = 0;
-    String s;
+    String *s;
 
     // Single character substring
-    string_init_from(&s, "abc");
+    s = string_create_from("abc");
     failed += test_assert(
-        string_substr(&s, 1, 1),
+        string_substr(s, 1, 1),
         TAG_VMSTRING,
         "Substring 'b' from String 'abc'"
     );
     failed += test_assert(
-        strcmp(s.data, "b") == 0,
+        strcmp(s->data, "b") == 0,
         TAG_VMSTRING,
         "Ensure String holds value 'b'"
     );
-    string_free(&s);
+    string_free(s);
 
     // Full substring
-    string_init_from(&s, "abc");
+    s = string_create_from("abc");
     failed += test_assert(
-        string_substr(&s, 0, 3),
+        string_substr(s, 0, 3),
         TAG_VMSTRING,
         "Substring 'abc' from String 'abc'"
     );
     failed += test_assert(
-        strcmp(s.data, "abc") == 0,
+        strcmp(s->data, "abc") == 0,
         TAG_VMSTRING,
         "Ensure String holds value 'abc'"
     );
-    string_free(&s);
+    string_free(s);
 
     // Empty substring
-    string_init_from(&s, "abc");
+    s = string_create_from("abc");
     failed += test_assert(
-        string_substr(&s, 0, 0),
+        string_substr(s, 0, 0),
         TAG_VMSTRING,
         "Substring '' from String 'abc'"
     );
     failed += test_assert(
-        strcmp(s.data, "") == 0,
+        strcmp(s->data, "") == 0,
         TAG_VMSTRING,
         "Ensure String holds value ''"
     );
-    string_free(&s);
-
+    string_free(s);
+    
     // Bad arguments
-    string_init_from(&s, "abc");
+    s = string_create_from("abc");
     failed += test_assert(
-        string_substr(&s, 0, -1) == false,
+        string_substr(s, 0, -1) == false,
         TAG_VMSTRING,
         "Negative substring length"
     );
     failed += test_assert(
-        string_substr(&s, -1, 2) == false,
+        string_substr(s, -1, 2) == false,
         TAG_VMSTRING,
         "Negative substring start"
     );
     failed += test_assert(
-        string_substr(&s, 4, 0) == false,
+        string_substr(s, 4, 0) == false,
         TAG_VMSTRING,
         "Substring start past string length"
     );
     failed += test_assert(
-        string_substr(&s, 0, 4) == false,
+        string_substr(s, 0, 4) == false,
         TAG_VMSTRING,
         "Full substring longer than string"
     );
     failed += test_assert(
-        string_substr(&s, 1, 3) == false,
+        string_substr(s, 1, 3) == false,
         TAG_VMSTRING,
         "Substring longer than string"
     );
-    string_free(&s);
-    string_init(&s);
+    string_free(s);
+    
+    s = string_create();
     failed += test_assert(
-        string_substr(&s, 0, 0) == false,
+        string_substr(s, 0, 0) == false,
         TAG_VMSTRING,
         "Substring '' from String ''"
     );
-    string_free(&s);
-
+    string_free(s);
     return failed;
 }
 

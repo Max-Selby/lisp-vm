@@ -11,19 +11,34 @@ typedef struct {
 } String;
 
 /**
- * Initialize a String object
- * @param s pointer to the String object to init
- * @returns true on success, false on failure
+ * Create a new String object, automatically initialized.
+ * Returns NULL on failure.
+ * @returns The new, initialized String object, or NULL on failure
  */
-bool string_init(String *s);
+String *string_create();
 
 /**
- * Initialize a String object with starting value
- * @param s Pointer to the String object to init
- * @param text Pointer to the text it should store
- * @returns true on success, false on failure
+ * Create a new String object, automatically initialized.
+ * Returns null on failure.
+ * @param text Pointer to the text to initialize the string with
+ * @returns The new, initialized String object, or NULL on failure
  */
-bool string_init_from(String *s, const char *text);
+String *string_create_from(const char *text);
+
+// /**
+//  * Initialize a String object
+//  * @param s pointer to the String object to init
+//  * @returns true on success, false on failure
+//  */
+// bool string_init(String *s);
+
+// /**
+//  * Initialize a String object with starting value
+//  * @param s Pointer to the String object to init
+//  * @param text Pointer to the text it should store
+//  * @returns true on success, false on failure
+//  */
+// bool string_init_from(String *s, const char *text);
 
 /**
  * Append a text value to a String object
@@ -65,6 +80,13 @@ bool string_equal(String *s1, String *s2, bool *equiv);
  * @returns True on success, false on failure
  */
 bool string_length(String *s, int *len);
+
+/**
+ * Copy a string's value into a different string
+ * @param source Pointer to the source String object
+ * @returns A new String object with the same value as source, or NULL on failure
+ */
+String *string_copy(String *source);
 
 #endif // VMSTRING_H
 

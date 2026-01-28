@@ -28,7 +28,7 @@ void skip_whitespace(Lexer *lexer) {
 }
 
 void lexer_error(char *msg) {
-    printf("Lexer error: %s", msg);
+    printf("Lexer error: %s\n", msg);
     exit(1);
 }
 
@@ -103,8 +103,8 @@ Token lexer_next_token(Lexer *lexer) {
         token.type = TOKEN_STRING;
         
         if (len == 0) {
-            String *str = malloc(sizeof(String));
-            if (!string_init(str)) {
+            String *str = string_create();
+            if (!str) {
                 lexer_error("Couldn't initialize string");
             }
             token.as.string = str;
@@ -157,8 +157,8 @@ Token lexer_next_token(Lexer *lexer) {
         strbuf[strindex] = '\0';
 
         token.type = TOKEN_STRING;
-        String *str = malloc(sizeof(String));
-        if (!string_init_from(str, strbuf)) {
+        String *str = string_create_from(strbuf);
+        if (!str) {
             lexer_error("Couldn't initialize string");
         }
         token.as.string = str;
@@ -196,8 +196,8 @@ Token lexer_next_token(Lexer *lexer) {
     }
     int len = lexer->pos - start;
     token.type = TOKEN_SYMBOL;
-    String *str = malloc(sizeof(String));
-    if (!string_init_from(str, strndup(&lexer->input[start], len))) {
+    String *str = string_create_from(strndup(&lexer->input[start], len));
+    if (!str) {
         lexer_error("Couldn't initialize string");
     }
     token.as.symbol = str;

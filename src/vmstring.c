@@ -7,6 +7,9 @@
 
 bool string_init(String *s) {
     if (!s) return false;
+    if (s->data) {
+        free(s->data);
+    }
     s->len = 0;
     s->cap = 16;
     s->data = malloc(s->cap);
@@ -25,6 +28,28 @@ bool string_init_from(String *s, const char *text) {
         return false;
     }
     return true;
+}
+
+String *string_create() {
+    String *s = malloc(sizeof(String));
+    s->data = NULL;
+    bool success = string_init(s);
+    if (!success) {
+        free(s);
+        return NULL;
+    }
+    return s;
+}
+
+String *string_create_from(const char *text) {
+    String *s = malloc(sizeof(String));
+    s->data = NULL;
+    bool success = string_init_from(s, text);
+    if (!success) {
+        free(s);
+        return NULL;
+    }
+    return s;
 }
 
 bool string_append(String *s, const char *text) {
@@ -67,6 +92,7 @@ void string_free(String *s) {
     s->data = NULL;
     s->len = 0;
     s->cap = 0;
+    free(s);
 }
 
 bool string_equal(String *s1, String *s2, bool *equiv) {
@@ -80,4 +106,9 @@ bool string_length(String *s, int *len) {
     if (!s || !s->data) return false;
     *len = (int)strlen(s->data);
     return true;    
+}
+
+String *string_copy(String *source) {
+    if (!source || !source->data || !source->cap || !source->len) return false;
+    return string_create_from(source->data);
 }

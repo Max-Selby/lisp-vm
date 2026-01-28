@@ -65,6 +65,10 @@ typedef struct {
     int sp; // Stack pointer
     Instruction *code;
     int pc; // Program counter
+    bool debug; // If true print debug info
+    String **strings; // Strings in use by the VM
+    size_t strings_count; // Number of strings in use
+    size_t strings_cap; // Capacity of strings array
 } VM;
 
 VM* vm_create();
