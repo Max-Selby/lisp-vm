@@ -32,8 +32,19 @@ typedef struct {
     int pos;
 } Lexer;
 
+/**
+ * Creates a new lexer for the given input string
+ */
 Lexer* lexer_create(char *input);
+
+/**
+ * Returns the next token from the lexer
+ */
 Token lexer_next_token(Lexer *lexer);
+
+/**
+ * Frees the given lexer
+ */
 void lexer_free(Lexer *lexer);
 
 #endif // LEXER_H

@@ -40,13 +40,28 @@ typedef struct {
     Token current_token;
 } Parser;
 
+/**
+ * Creates a new parser using the given lexer
+ */
 Parser* parser_create(Lexer *lexer);
+
+/**
+ * Parses the tokens from the lexer into an ASTProgram
+ */
 ASTProgram* parser_parse(Parser *parser);
+
+/**
+ * Frees the given parser
+ */
 void parser_free(Parser *parser);
+
+/**
+ * Frees a single ASTNode and its children recursively
+ */
 void astnode_free(ASTNode *node);
 
 /**
- * Prints the given ASTProgram.
+ * Prints the given ASTProgram
  * Useful for debugging
  */
 void astprogram_print(ASTProgram *program);

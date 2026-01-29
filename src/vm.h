@@ -7,6 +7,9 @@
 
 #define VM_STACK_SIZE (16384)
 
+/**
+ * OpCodes supported by the VM
+ */
 typedef enum {
     OP_PUSH,        // Push value onto the stack
     OP_ADD,         // Pop two, push sum
@@ -38,6 +41,9 @@ typedef enum {
     OP_HALT         // Stop execution
 } OpCode;
 
+/**
+ * Value types supported by the VM
+ */
 typedef enum {
     VAL_INTEGER,
     VAL_FLOAT,
@@ -45,6 +51,9 @@ typedef enum {
     VAL_STRING
 } ValueType;
 
+/**
+ * A VM value
+ */
 typedef struct {
     ValueType type;
     union {
@@ -55,11 +64,17 @@ typedef struct {
     } as;
 } Value;
 
+/**
+ * A VM instruction
+ */
 typedef struct {
     OpCode opCode;
     Value operand;
 } Instruction;
 
+/**
+ * The VM structure
+ */
 typedef struct {
     Value *stack;
     int stack_size;
@@ -72,8 +87,19 @@ typedef struct {
     size_t strings_cap; // Capacity of strings array
 } VM;
 
+/**
+ * Creates a new VM instance
+ */
 VM* vm_create();
+
+/**
+ * Frees the given VM instance
+ */
 void vm_free(VM *vm);
+
+/**
+ * Executes the code loaded in the given VM
+ */
 void vm_execute(VM *vm);
 
 #endif // VM_H
