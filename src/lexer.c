@@ -203,3 +203,8 @@ Token lexer_next_token(Lexer *lexer) {
     token.as.symbol = str;
     return token;
 }
+
+void lexer_free(Lexer *lexer) {
+    if (!lexer) return;
+    free(lexer);
+}

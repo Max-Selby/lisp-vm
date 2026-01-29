@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "vm.h"
+#include "parser.h"
 #include "vmstring.h"
 
 #include <stdio.h>
@@ -28,17 +29,21 @@ void tests1(void) {
 // This is all testing, should be removed later
 int main(void) {
     Lexer *lexer = lexer_create("(+ 3 \"hi\") (defun foo (3.5 true false))");
-    Token token;
-    while ((token = lexer_next_token(lexer)).type != TOKEN_EOF) {
-        printf("Token: %d\n", token.type);
-        printf("Pos: %d\n", lexer->pos);
-        if (token.type == TOKEN_INTEGER) printf("  Type : integer, val: %d\n", token.as.integer);
-        else if (token.type == TOKEN_FLOAT) printf("  Type : float, val: %f\n", token.as.floating);
-        else if (token.type == TOKEN_LPAREN) printf("  Type : (\n");
-        else if (token.type == TOKEN_RPAREN) printf("  Type : )\n");
-        else if (token.type == TOKEN_BOOL) printf("  Type : BOOL, val: %d\n", (int)token.as.boolean);
-        else if (token.type == TOKEN_STRING) printf("  Type : string, val: %s\n", token.as.string->data);
-        else if (token.type == TOKEN_SYMBOL) printf("  Type : symbol, val: %s\n", token.as.symbol->data);
-        printf("=========\n");
-    }
+    // Token token;
+    // while ((token = lexer_next_token(lexer)).type != TOKEN_EOF) {
+    //     printf("Token: %d\n", token.type);
+    //     printf("Pos: %d\n", lexer->pos);
+    //     if (token.type == TOKEN_INTEGER) printf("  Type : integer, val: %d\n", token.as.integer);
+    //     else if (token.type == TOKEN_FLOAT) printf("  Type : float, val: %f\n", token.as.floating);
+    //     else if (token.type == TOKEN_LPAREN) printf("  Type : (\n");
+    //     else if (token.type == TOKEN_RPAREN) printf("  Type : )\n");
+    //     else if (token.type == TOKEN_BOOL) printf("  Type : BOOL, val: %d\n", (int)token.as.boolean);
+    //     else if (token.type == TOKEN_STRING) printf("  Type : string, val: %s\n", token.as.string->data);
+    //     else if (token.type == TOKEN_SYMBOL) printf("  Type : symbol, val: %s\n", token.as.symbol->data);
+    //     printf("=========\n");
+    // }
+
+    Parser *parser = parser_create(lexer);
+    ASTProgram *program = parser_parse(parser);
+    astprogram_print(program);
 }

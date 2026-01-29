@@ -6,7 +6,7 @@ A lisp-style programming language with a bytecode compiler and virtual machine.
 Currently a work in progress.
 
 Working:
-- vm, lexer
+- vm, lexer, parser
 
 To do:
-- parser, codegen, repl(?)
+- codegen, repl(?)
