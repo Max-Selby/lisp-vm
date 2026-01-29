@@ -8,7 +8,7 @@
 
 const char *TAG_LEXER = "TEST_LEXER";
 
-int testBasic() {
+static int test_basic() {
     int failed = 0;
     Lexer *lexer = lexer_create("(+ 3 \"hi\" 53.2 true false \"\" \"\\\"\")");
     Token token;
@@ -102,9 +102,9 @@ int testBasic() {
     return failed;
 }
 
-int runLexerTests() {
+int run_lexer_tests() {
     int failed = 0;
-    failed += testBasic();
+    failed += test_basic();
 
     if (failed > 0) {
         printf("%s: Tests failed: %d\n", TAG_LEXER, failed);

@@ -3,6 +3,6 @@
 
 extern const char *TAG_LEXER;
 
-int runLexerTests();
+int run_lexer_tests();
 
 #endif // TEST_LEXER_H

@@ -8,7 +8,7 @@
 
 const char *TAG_VMSTRING = "TEST_VMSTRING";
 
-int testGenerate() {
+static int test_generate() {
     int failed = 0;
     String *s;
 
@@ -68,7 +68,7 @@ int testGenerate() {
     return failed;
 }
 
-int testAppend() {
+static int test_append() {
     int failed = 0;
     String *s;
 
@@ -102,7 +102,7 @@ int testAppend() {
     return failed;
 }
 
-int testSubstring() {
+static int test_substring() {
     int failed = 0;
     String *s;
 
@@ -187,11 +187,11 @@ int testSubstring() {
     return failed;
 }
 
-int runVMStringTests() {
+int run_vm_string_tests() {
     int failed = 0;
-    failed += testGenerate();
-    failed += testAppend();
-    failed += testSubstring();
+    failed += test_generate();
+    failed += test_append();
+    failed += test_substring();
 
     if (failed > 0) {
         printf("%s: Tests failed: %d\n", TAG_VMSTRING, failed);

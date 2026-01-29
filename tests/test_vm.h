@@ -3,6 +3,6 @@
 
 extern const char *TAG_VM;
 
-int runVMTests();
+int run_vm_tests();
 
 #endif // TEST_VM_H

@@ -46,4 +46,8 @@ int main(void) {
     Parser *parser = parser_create(lexer);
     ASTProgram *program = parser_parse(parser);
     astprogram_print(program);
+
+    astprogram_free(program);
+    parser_free(parser);
+    lexer_free(lexer);
 }

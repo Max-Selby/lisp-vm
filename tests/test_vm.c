@@ -9,7 +9,7 @@
 
 const char *TAG_VM = "TEST_VM";
 
-int testPushPop() {
+static int test_push_pop() {
     int failed = 0;
 
     VM *vm = vm_create();
@@ -87,7 +87,7 @@ int testPushPop() {
     return failed;
 }
 
-int testStrings() {
+static int test_strings() {
     int failed = 0;
 
     VM *vm = vm_create();
@@ -161,7 +161,7 @@ int testStrings() {
     return failed;
 }
 
-int testLogic() {
+static int test_logic() {
     int failed = 0;
     VM *vm = vm_create();
     String *s1 = string_create_from("same");
@@ -270,7 +270,7 @@ int testLogic() {
     return failed;
 }
 
-int testMath() {
+static int test_math() {
     int failed = 0;
     VM *vm = vm_create();
 
@@ -344,7 +344,7 @@ int testMath() {
     return failed;
 }
 
-int testMiscOps() {
+static int test_misc_ops() {
     int failed = 0;
     VM *vm = vm_create();
 
@@ -388,7 +388,7 @@ int testMiscOps() {
     return failed;
 }
 
-int testControl() {
+static int test_control() {
     int failed = 0;
     VM *vm = vm_create();
 
@@ -439,14 +439,14 @@ int testControl() {
     return failed;
 }
 
-int runVMTests() {
+int run_vm_tests() {
     int failed = 0;
-    failed += testPushPop();
-    failed += testStrings();
-    failed += testLogic();
-    failed += testMath();
-    failed += testMiscOps();
-    failed += testControl();
+    failed += test_push_pop();
+    failed += test_strings();
+    failed += test_logic();
+    failed += test_math();
+    failed += test_misc_ops();
+    failed += test_control();
 
     if (failed > 0) {
         printf("%s: Tests failed: %d\n", TAG_VM, failed);

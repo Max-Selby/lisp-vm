@@ -144,8 +144,6 @@ ASTProgram* parser_parse(Parser *parser) {
     return program;
 }
 
-// Free a single ASTNode and its children recursively
-// (A program should free each of its ASTNodes using this function)
 void astnode_free(ASTNode *node) {
     if (!node) return;
 
@@ -160,6 +158,16 @@ void astnode_free(ASTNode *node) {
         free(node->list.children);
     }
     free(node);
+}
+
+void astprogram_free(ASTProgram *program) {
+    if (!program) return;
+
+    for (int i = 0; i < program->count; i++) {
+        astnode_free(program->expressions[i]);
+    }
+    free(program->expressions);
+    free(program);
 }
 
 void parser_free(Parser *parser) {

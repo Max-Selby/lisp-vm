@@ -56,9 +56,9 @@ ASTProgram* parser_parse(Parser *parser);
 void parser_free(Parser *parser);
 
 /**
- * Frees a single ASTNode and its children recursively
+ * Frees an ASTProgram and all its contained ASTNodes
  */
-void astnode_free(ASTNode *node);
+void astprogram_free(ASTProgram *program);
 
 /**
  * Prints the given ASTProgram
