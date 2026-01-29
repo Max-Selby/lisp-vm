@@ -10,8 +10,8 @@
 
 VM* vm_create() {
     VM *vm = malloc(sizeof(VM));
-    vm->stack_size = VM_STACK_SIZE;
-    vm->stack = malloc(sizeof(Value) * vm->stack_size);
+    vm->stack_cap = 256;
+    vm->stack = malloc(sizeof(Value) * vm->stack_cap);
     vm->sp = 0;
     vm->pc = 0;
     vm->debug = false;
@@ -37,7 +37,22 @@ void vm_free(VM *vm) {
     free(vm);
 }
 
+void runtime_error(char *msg) {
+    printf("Runtime error: %s\n", msg);
+    exit(1);
+}
+
 void stack_push_value(VM *vm, Value value) {
+    if (vm->sp >= (int)vm->stack_cap) {
+        size_t new_cap = vm->stack_cap * 2;
+        Value *tmp = realloc(vm->stack, new_cap * sizeof *vm->stack);
+        if (!tmp) {
+            runtime_error("Unable to allocate space for stack growth");
+        }
+        vm->stack = tmp;
+        vm->stack_cap = new_cap;
+    }
+
     vm->stack[vm->sp] = value;
     vm->sp++;
 }
@@ -79,11 +94,6 @@ Instruction code_get_next(VM *vm) {
     Instruction insn = vm->code[vm->pc];
     vm->pc++;
     return insn;
-}
-
-void runtime_error(char *msg) {
-    printf("Runtime error: %s\n", msg);
-    exit(1);
 }
 
 String *vm_string_new(VM *vm) {

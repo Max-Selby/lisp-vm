@@ -5,8 +5,6 @@
 
 #include <stdbool.h>
 
-#define VM_STACK_SIZE (16384)
-
 /**
  * OpCodes supported by the VM
  */
@@ -77,7 +75,7 @@ typedef struct {
  */
 typedef struct {
     Value *stack;
-    int stack_size;
+    size_t stack_cap;
     int sp; // Stack pointer
     Instruction *code;
     int pc; // Program counter
