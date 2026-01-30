@@ -9,7 +9,7 @@
 
 // This is all testing, should be removed later
 int main(void) {
-    Lexer *lexer = lexer_create("(println (/ 2 4))");
+    Lexer *lexer = lexer_create("(println (not true)) (println (not false))");
 
     Parser *parser = parser_create(lexer);
     ASTProgram *program = parser_parse(parser);

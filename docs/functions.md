@@ -20,10 +20,10 @@
 - Modulo on two integers.
 
 ### and
-- Logic "and" on two booleans.
+- Logic "and" on two or more booleans.
 
 ### or
-- Logic "or" on two booleans.
+- Logic "or" on two or more booleans.
 
 ### not
 - Logic "not" on one boolean.
