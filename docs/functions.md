@@ -33,3 +33,15 @@
 
 ### println
 - Print the value of the argument to the console and add a newline. Argument type does not matter.
+
+### concat
+- Concatenate two or more strings.
+
+### substr
+- Takes three arguments: string, index, length. Produces a substring of string starting at index. The first character is index 0.
+
+### ==
+- Check equality of two numbers. Returns true or false. Comparing integers and floats is allowed
+
+### !=
+- Check inequality of two numbers. Returns true or false. Comparing integers and floats is allowed

@@ -150,6 +150,50 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf) {
         codegen_function_exact_args(node, bbuf, OP_PRINTLN, "println", 1);
     }
 
+    // concat (string concatenation)
+    else if (strcmp(func_name->data, "concat") == 0) {
+        codegen_function_twoplus_args(node, bbuf, OP_CONCATSTR, "concat");
+    }
+
+    // substr (substring)
+    else if (strcmp(func_name->data, "substr") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_SUBSTR, "substr", 3);
+    }
+
+    // == (numerical equality)
+    else if (strcmp(func_name->data, "==") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_EQ, "==", 2);
+    }
+
+    // != (numerical inequality)
+    else if (strcmp(func_name->data, "!=") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_NEQ, "!=", 2);
+    }
+
+    // < (numerical less than)
+    else if (strcmp(func_name->data, "<") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_LT, "<", 2);
+    }
+
+    // <= (numerical less than or equal)
+    else if (strcmp(func_name->data, "<=") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_LTE, "<=", 2);
+    }
+
+    // > (numerical greater than)
+    else if (strcmp(func_name->data, ">") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_GT, ">", 2);
+    }
+
+    // >= (numerical greater than or equal)
+    else if (strcmp(func_name->data, ">=") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_GTE, ">=", 2);
+    }
+
+
+
+
+    // Unsupported function
     else {
         codegen_error("Unsupported function call");
     }

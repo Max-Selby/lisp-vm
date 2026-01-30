@@ -326,8 +326,8 @@ void vm_execute(VM *vm) {
                     runtime_error("Cannot concatenate non-strings!");
                 }
                 
-                String *new = string_copy(a.as.string);
-                bool success = string_append(new, b.as.string->data);
+                String *new = string_copy(b.as.string);
+                bool success = string_append(new, a.as.string->data);
 
                 if (!success) {
                     runtime_error("String append failed!");
@@ -338,9 +338,9 @@ void vm_execute(VM *vm) {
                 break;
             }
             case OP_SUBSTR: {
-                Value s = stack_pop(vm);
-                Value start = stack_pop(vm);
                 Value length = stack_pop(vm);
+                Value start = stack_pop(vm);
+                Value s = stack_pop(vm);
 
                 if (s.type != VAL_STRING) {
                     runtime_error("Cannot take substring of non-string!");
@@ -438,7 +438,7 @@ void vm_execute(VM *vm) {
                 double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
-                stack_push_bool(vm, anum < bnum);
+                stack_push_bool(vm, bnum < anum);
                 break;
             }
             case OP_LTE: {
@@ -455,7 +455,7 @@ void vm_execute(VM *vm) {
                 double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
-                stack_push_bool(vm, anum <= bnum);
+                stack_push_bool(vm, bnum <= anum);
                 break;
             }
             case OP_GT: {
@@ -472,7 +472,7 @@ void vm_execute(VM *vm) {
                 double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
-                stack_push_bool(vm, anum > bnum);
+                stack_push_bool(vm, bnum > anum);
                 break;
             }
             case OP_GTE: {
@@ -489,7 +489,7 @@ void vm_execute(VM *vm) {
                 double anum = (a.type == VAL_INTEGER) ? (double)a.as.integer : a.as.floating;
                 double bnum = (b.type == VAL_INTEGER) ? (double)b.as.integer : b.as.floating;
 
-                stack_push_bool(vm, anum >= bnum);
+                stack_push_bool(vm, bnum >= anum);
                 break;
             }
             case OP_STR_EQ: {

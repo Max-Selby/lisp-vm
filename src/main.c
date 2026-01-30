@@ -9,7 +9,7 @@
 
 // This is all testing, should be removed later
 int main(void) {
-    Lexer *lexer = lexer_create("(println (not true)) (println (not false))");
+    Lexer *lexer = lexer_create("(println (< 2.0 3)) (println (<= 2.0 2)) (println (> 2.0 3)) (println (>= 2.0 2))");
 
     Parser *parser = parser_create(lexer);
     ASTProgram *program = parser_parse(parser);

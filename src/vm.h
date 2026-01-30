@@ -20,17 +20,17 @@ typedef enum {
     OP_LOGIC_NOT,   // Pop a value, push !value
     OP_PRINT,       // Print top of stack without popping
     OP_PRINTLN,     // Print top of stack without popping and add newline
-    OP_CONCATSTR,   // Pop a & b, push string concatenation of a + b
-    OP_SUBSTR,      // Pop a, b, c, push substring of a starting at b, of length c
+    OP_CONCATSTR,   // Pop a & b, push string concatenation of b + a
+    OP_SUBSTR,      // Pop a, b, c, push substring of c starting at b, of length a
     OP_DISCARD,     // Pop a value and do nothing with it
     OP_DUP,         // Pop a value and push it twice
     OP_SWAP,        // Pop two, push them so their order flips
-    OP_EQ,          // Pop two numbers, push boolean first == second
-    OP_NEQ,         // Pop two numbers, push boolean first != second
-    OP_LT,          // Pop two numbers, push boolean first < second
-    OP_LTE,         // Pop two numbers, push boolean first <= second
-    OP_GT,          // Pop two numbers, push boolean first > second
-    OP_GTE,         // Pop two numbers, push boolean first >= second
+    OP_EQ,          // Pop two numbers, push boolean second == first
+    OP_NEQ,         // Pop two numbers, push boolean second != first
+    OP_LT,          // Pop two numbers, push boolean second < first
+    OP_LTE,         // Pop two numbers, push boolean second <= first
+    OP_GT,          // Pop two numbers, push boolean second > first
+    OP_GTE,         // Pop two numbers, push boolean second >= first
     OP_STR_EQ,      // Pop two, push boolean true if they are equivalent strings, else push false.
     OP_STRLEN,      // Pop a string, push its integer length
     OP_JMP,         // Pop an integer, jump to the instruction at that address
