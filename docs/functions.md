@@ -41,7 +41,31 @@
 - Takes three arguments: string, index, length. Produces a substring of string starting at index. The first character is index 0.
 
 ### ==
-- Check equality of two numbers. Returns true or false. Comparing integers and floats is allowed
+- Check equality of two numbers. Returns true or false. Comparing integers and floats is allowed.
 
 ### !=
-- Check inequality of two numbers. Returns true or false. Comparing integers and floats is allowed
+- Check inequality of two numbers. Returns true or false. Comparing integers and floats is allowed.
+
+### <
+- Check if first number < second number. Returns true or false. Comparing integers and floats is allowed.
+
+### <=
+- Check if first number <= second number. Returns true or false. Comparing integers and floats is allowed.
+
+### >
+- Check if first number > second number. Returns true or false. Comparing integers and floats is allowed.
+
+### >=
+- Check if first number >= second number. Returns true or false. Comparing integers and floats is allowed.
+
+### str=
+- Check two strings are equivalent. Returns true or false.
+
+### strlen
+- Outputs the integer length of given string.
+
+### int2float
+- Converts an integer to a float.
+
+### float2int
+- Converts a float to an integer, rounding down.

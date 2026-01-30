@@ -109,6 +109,6 @@ bool string_length(String *s, int *len) {
 }
 
 String *string_copy(String *source) {
-    if (!source || !source->data || !source->cap || !source->len) return false;
+    if (!source || !source->data || !source->cap) return NULL;
     return string_create_from(source->data);
 }

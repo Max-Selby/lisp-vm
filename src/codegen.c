@@ -190,6 +190,25 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf) {
         codegen_function_exact_args(node, bbuf, OP_GTE, ">=", 2);
     }
 
+    // str= (string equality)
+    else if (strcmp(func_name->data, "str=") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_STR_EQ, "str=", 2);
+    }
+
+    // strlen (string length)
+    else if (strcmp(func_name->data, "strlen") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_STRLEN, "strlen", 1);
+    }
+
+    // int2float
+    else if (strcmp(func_name->data, "int2float") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_INT2FLOAT, "int2float", 1);
+    }
+
+    // float2int
+    else if (strcmp(func_name->data, "float2int") == 0) {
+        codegen_function_exact_args(node, bbuf, OP_FLOAT2INT, "float2int", 1);
+    }
 
 
 
@@ -256,16 +275,3 @@ void codegen_compile(ASTProgram *program, BytecodeBuf *bbuf) {
     }
     bytecode_emit(bbuf, (Instruction){OP_HALT, {0}});
 }
-
-
-
-// TODO: delete these ------------
-// Instruction *codegen_generate(ASTProgram *program) {
-    // TODO: VERY IMPORTANT: if calling codegen_generate_from_ast multiple times,
-    // Remember to only copy over "insn_count" from each call, not the whole thing,
-    // since it will likely include many unfilled instructions (garbage). Also if
-    // codegen_generate_from_ast ends up appending OP_HALT always (which it probably should),
-    // remember to delete that instruction from all but the last one.
-
-    // Also, free the returned instructions arrays from codegen_generate_from_ast after copying.
-// }
