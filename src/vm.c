@@ -281,7 +281,7 @@ void vm_execute(VM *vm) {
                 break;
             }
             case OP_PRINT: {
-                Value val = vm->stack[vm->sp - 1];
+                Value val = stack_pop(vm);
                 switch (val.type) {
                     case VAL_INTEGER:
                         printf("%d", val.as.integer);
@@ -300,7 +300,7 @@ void vm_execute(VM *vm) {
                 break;
             }
             case OP_PRINTLN: {
-                Value val = vm->stack[vm->sp - 1];
+                Value val = stack_pop(vm);
                 switch (val.type) {
                     case VAL_INTEGER:
                         printf("%d\n", val.as.integer);

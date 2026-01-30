@@ -37,3 +37,12 @@ int main(int argc, char *argv[]) {
     vm_free(vm);
     free(source);
 }
+
+// TODO: 
+/*
+Todo list:
+- Implement variables
+- Implement control flow: (if cond then else) (while bool expr) (repeat n expr)
+- Implement (import "xyz")
+- Implement functions: (defun name (args) body) and (name params)
+*/
