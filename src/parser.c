@@ -124,6 +124,11 @@ ASTProgram* parser_parse(Parser *parser) {
     program->expressions = malloc(sizeof(ASTNode*) * program->capacity);
 
     while (parser->current_token.type != TOKEN_EOF) {
+        if (parser->current_token.type == TOKEN_RPAREN) {
+            // This means there is a ) at top level, which doesn't make sense
+            parser_error("Unmatched ')'");
+        }
+
         // Make space for new ASTProgram if needed
         if (program->count >= program->capacity) {
             program->capacity *= 2;
