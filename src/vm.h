@@ -19,6 +19,7 @@ typedef enum {
     OP_LOGIC_OR,    // Pop two, push a || b
     OP_LOGIC_NOT,   // Pop a value, push !value
     OP_PRINT,       // Print top of stack without popping
+    OP_PRINTLN,     // Print top of stack without popping and add newline
     OP_CONCATSTR,   // Pop a & b, push string concatenation of a + b
     OP_SUBSTR,      // Pop a, b, c, push substring of a starting at b, of length c
     OP_DISCARD,     // Pop a value and do nothing with it

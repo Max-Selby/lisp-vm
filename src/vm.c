@@ -86,6 +86,9 @@ void stack_push_bool(VM *vm, bool b) {
 }
 
 Value stack_pop(VM *vm) {
+    if (vm->sp <= 0) {
+        runtime_error("Stack underflow!");
+    }
     vm->sp--;
     return vm->stack[vm->sp];
 }
@@ -291,6 +294,25 @@ void vm_execute(VM *vm) {
                         break;
                     case VAL_STRING:
                         printf("%s", val.as.string->data);
+                        break;
+                }
+                
+                break;
+            }
+            case OP_PRINTLN: {
+                Value val = vm->stack[vm->sp - 1];
+                switch (val.type) {
+                    case VAL_INTEGER:
+                        printf("%d\n", val.as.integer);
+                        break;
+                    case VAL_FLOAT:
+                        printf("%f\n", val.as.floating);
+                        break;
+                    case VAL_BOOL:
+                        printf(val.as.boolean == true ? "true\n" : "false\n");
+                        break;
+                    case VAL_STRING:
+                        printf("%s\n", val.as.string->data);
                         break;
                 }
                 

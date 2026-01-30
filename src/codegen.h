@@ -1,0 +1,39 @@
+#ifndef CODEGEN_H
+#define CODEGEN_H
+
+#include "parser.h"
+#include "vm.h"
+
+typedef struct {
+    Instruction *instructions;
+    size_t count;
+    size_t cap;
+} BytecodeBuf;
+
+/**
+ * Creates a new bytecode buffer
+ */
+BytecodeBuf* bytecode_create();
+
+/**
+ * Frees the given bytecode buffer
+ */
+void bytecode_free(BytecodeBuf *bbuf);
+
+/**
+ * Compiles the given AST program into bytecode instructions
+ */
+void codegen_compile(ASTProgram *program, BytecodeBuf *bbuf);
+
+/**
+ * Compiles a single AST expression into bytecode instructions
+ */
+void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf);
+
+/**
+ * Emits a single instruction into the given bytecode buffer
+ */
+void bytecode_emit(BytecodeBuf *bbuf, Instruction insn);
+
+
+#endif // CODEGEN_H
