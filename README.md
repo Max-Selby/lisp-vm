@@ -3,10 +3,8 @@
 
 A lisp-style programming language with a bytecode compiler and virtual machine.
 
-Currently a work in progress.
+### How to use
 
-Working:
-- vm, lexer, parser
+Compile with `make`.
 
-To do:
-- codegen, repl(?)
+After compiling, use the `lvm` file from the `build/` directory on a file of your choice (see `examples/` or write your own).
