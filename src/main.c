@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     VM *vm = vm_create();
     vm->code = bbuf->instructions;
     vm_execute(vm);
-    
+
     astprogram_free(program);
     bytecode_free(bbuf);
     symbol_table_free(symtable);

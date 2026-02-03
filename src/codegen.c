@@ -182,8 +182,21 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         return;
     }
 
+    // do (sequence of expressions)
+    else if (strcmp(func_name->data, "do") == 0) {
+        if (node->list.count < 2) {
+            codegen_error("do expects at least 1 argument");
+        }
+
+        // Compile all expressions in sequence
+        for (int i = 1; i < node->list.count; i++) {
+            codegen_compile_expr(node->list.children[i], bbuf, symtable);
+        }
+        // (The value of the last expression will be the result)
+    }
+
     // + (addition)
-    if (strcmp(func_name->data, "+") == 0) {
+    else if (strcmp(func_name->data, "+") == 0) {
         codegen_function_twoplus_args(node, bbuf, symtable, OP_ADD, "+");
     }
 

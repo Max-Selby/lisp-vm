@@ -11,6 +11,10 @@ Note that every function returns something; this is a rule for the language.
 - This can also be used to redefine (e.g. "set") already defined variables.
 - Returns the value stored in the variable.
 
+### do
+- Execute a sequence of operations. The result of the final operation will be returned.
+- Example: (do (define x 1) (define y 2) (+ x y))
+
 ### +
 - Add two or more numbers together. If one is a float, the result will be a float.
 
