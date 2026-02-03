@@ -1,6 +1,7 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
+#include "vmstring.h"
 #include "parser.h"
 #include "vm.h"
 
@@ -12,6 +13,16 @@ typedef struct {
     size_t count;
     size_t cap;
 } BytecodeBuf;
+
+/**
+ * A simple symbol table for variable storage
+ */
+typedef struct {
+    String **names;
+    int *locations;
+    int count;
+    int capacity;
+} SymbolTable;
 
 /**
  * Creates a new bytecode buffer
@@ -26,17 +37,38 @@ void bytecode_free(BytecodeBuf *bbuf);
 /**
  * Compiles the given AST program into bytecode instructions
  */
-void codegen_compile(ASTProgram *program, BytecodeBuf *bbuf);
+void codegen_compile(ASTProgram *program, BytecodeBuf *bbuf, SymbolTable *symtable);
 
 /**
  * Compiles a single AST expression into bytecode instructions
  */
-void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf);
+void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtable);
 
 /**
  * Emits a single instruction into the given bytecode buffer
  */
 void bytecode_emit(BytecodeBuf *bbuf, Instruction insn);
 
+/**
+ * Creates a new symbol table
+ */
+SymbolTable* symbol_table_create();
+
+/**
+ * Frees the given symbol table
+ */
+void symbol_table_free(SymbolTable *table);
+
+/**
+ * Looks up a symbol in the table, returning its location or -1 if not found
+ * @return Location of the symbol, or -1 if not found
+ */
+int symbol_table_lookup(SymbolTable *table, String *name);
+
+/**
+ * Defines a new symbol in the table, returning its location
+ * @return Location of the new symbol
+ */
+int symbol_table_define(SymbolTable *table, String *name);
 
 #endif // CODEGEN_H

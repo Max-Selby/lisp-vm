@@ -1,1 +1,5 @@
-(println (+ 5 2))
+(print (define x 10))
+(print " + ")
+(print (define y 5))
+(print " = ")
+(println (+ x y))

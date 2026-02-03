@@ -1,8 +1,15 @@
 
-# Default functions
+# Functions
+
+Note that every function returns something.
 
 ### import
-- Takes one argument, which should be a string filepath. Imports the code and runs it here.
+- Takes one argument, which should be a string filepath. Imports the code and runs it here. Returns true on success and false on failure.
+
+### define
+- Takes two arguments: a symbol name, and any value. That symbol is now a global variable, and can be used anywhere.
+- This can also be used to redefine (e.g. "set") already defined variables.
+- Returns the value stored in the variable.
 
 ### +
 - Add two or more numbers together. If one is a float, the result will be a float.
@@ -29,10 +36,10 @@
 - Logic "not" on one boolean.
 
 ### print
-- Print the value of the argument to the console. Argument type does not matter.
+- Print the value of the argument to the console. Argument type does not matter. Returns the printed value.
 
 ### println
-- Print the value of the argument to the console and add a newline. Argument type does not matter.
+- Print the value of the argument to the console and add a newline. Argument type does not matter. Returns the printed value.
 
 ### concat
 - Concatenate two or more strings.

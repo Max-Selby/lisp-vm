@@ -3,12 +3,63 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "vmstring.h"
 #include "parser.h"
 #include "vm.h"
 
 void codegen_error(char *msg) {
     printf("Codegen error: %s\n", msg);
     exit(1);
+}
+
+SymbolTable* symbol_table_create() {
+    SymbolTable *table = malloc(sizeof(SymbolTable));
+    table->count = 0;
+    table->capacity = 8;
+    table->names = malloc(sizeof(String*) * table->capacity);
+    table->locations = malloc(sizeof(int) * table->capacity);
+    return table;
+}
+
+void symbol_table_free(SymbolTable *table) {
+    for (int i = 0; i < table->count; i++) {
+        string_free(table->names[i]);
+    }
+    free(table->names);
+    free(table->locations);
+    free(table);
+}
+
+int symbol_table_lookup(SymbolTable *table, String *name) {
+    for (int i = 0; i < table->count; i++) {
+        if (strcmp(table->names[i]->data, name->data) == 0) {
+            return table->locations[i];
+        }
+    }
+
+    // Not found
+    return -1;
+}
+
+int symbol_table_define(SymbolTable *table, String *name) {
+    int existing_loc = symbol_table_lookup(table, name);
+    if (existing_loc != -1) {
+        // Already defined
+        return existing_loc;
+    }
+
+    // Check if we need to resize
+    if (table->count >= table->capacity) {
+        table->capacity *= 2;
+        table->names = realloc(table->names, sizeof(String*) * table->capacity);
+        table->locations = realloc(table->locations, sizeof(int) * table->capacity);
+    }
+
+    // Add new symbol
+    table->names[table->count] = string_copy(name); // Copy the string for memory management purposes
+    table->locations[table->count] = table->count;
+    table->count++;
+    return table->locations[table->count - 1];
 }
 
 BytecodeBuf* bytecode_create() {
@@ -36,6 +87,7 @@ void bytecode_emit(BytecodeBuf *bbuf, Instruction insn) {
 static void codegen_function_exact_args(
     ASTNode *node,
     BytecodeBuf *bbuf,
+    SymbolTable *symtable,
     OpCode opCode,
     char *func_name,
     size_t arg_count
@@ -48,7 +100,7 @@ static void codegen_function_exact_args(
 
     // Compile all argument expressions
     for (int i = 1; i < node->list.count; i++) {
-        codegen_compile_expr(node->list.children[i], bbuf);
+        codegen_compile_expr(node->list.children[i], bbuf, symtable);
     }
 
     // Add function opcode
@@ -59,6 +111,7 @@ static void codegen_function_exact_args(
 static void codegen_function_twoplus_args(
     ASTNode *node,
     BytecodeBuf *bbuf,
+    SymbolTable *symtable,
     OpCode opCode,
     char *func_name
 ) {
@@ -70,7 +123,7 @@ static void codegen_function_twoplus_args(
 
     // Compile all argument expressions
     for (int i = 1; i < node->list.count; i++) {
-        codegen_compile_expr(node->list.children[i], bbuf);
+        codegen_compile_expr(node->list.children[i], bbuf, symtable);
     }
 
     // Add enough + instructions to sum all arguments
@@ -79,7 +132,7 @@ static void codegen_function_twoplus_args(
     }
 }
 
-void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf) {
+void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtable) {
     if (node->type != AST_LIST) {
         codegen_error("Expected AST_LIST node for function call");
     }
@@ -100,114 +153,143 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf) {
     //////////////// Base functions supported ////////////////
     //////////////////////////////////////////////////////////
 
+    // define (variable definition)
+    if (strcmp(func_name->data, "define") == 0) {
+        if (node->list.count != 3) {
+            codegen_error("define expects exactly 2 arguments");
+        }
+
+        ASTNode *var_name_node = node->list.children[1];
+        if (var_name_node->type != AST_SYMBOL) {
+            codegen_error("define: first argument must be a symbol");
+        }
+        String *var_name = var_name_node->symbol;
+
+        // Compile the value expression
+        ASTNode *value_node = node->list.children[2];
+        codegen_compile_expr(value_node, bbuf, symtable);
+
+        // Define the variable in the symbol table
+        int location = symbol_table_define(symtable, var_name);
+
+        // Value will be on the stack at this point, time to store it
+        Instruction store_insn;
+        store_insn.opCode = OP_STORE_VAR;
+        store_insn.operand.type = VAL_INTEGER;
+        store_insn.operand.as.integer = location;
+        bytecode_emit(bbuf, store_insn);
+
+        return;
+    }
+
     // + (addition)
     if (strcmp(func_name->data, "+") == 0) {
-        codegen_function_twoplus_args(node, bbuf, OP_ADD, "+");
+        codegen_function_twoplus_args(node, bbuf, symtable, OP_ADD, "+");
     }
 
     // - (subtraction)
     else if (strcmp(func_name->data, "-") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_SUB, "-", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_SUB, "-", 2);
     }
 
     // * (multiplication)
     else if (strcmp(func_name->data, "*") == 0) {
-        codegen_function_twoplus_args(node, bbuf, OP_MUL, "*");
+        codegen_function_twoplus_args(node, bbuf, symtable, OP_MUL, "*");
     }
 
     // / (division)
     else if (strcmp(func_name->data, "/") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_DIV, "/", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_DIV, "/", 2);
     }
 
     // % (modulo)
     else if (strcmp(func_name->data, "%") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_MOD, "%", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_MOD, "%", 2);
     }
 
     // and (logic)
     else if (strcmp(func_name->data, "and") == 0) {
-        codegen_function_twoplus_args(node, bbuf, OP_LOGIC_AND, "and");
+        codegen_function_twoplus_args(node, bbuf, symtable, OP_LOGIC_AND, "and");
     }
 
     // or (logic)
     else if (strcmp(func_name->data, "or") == 0) {
-        codegen_function_twoplus_args(node, bbuf, OP_LOGIC_OR, "or");
+        codegen_function_twoplus_args(node, bbuf, symtable, OP_LOGIC_OR, "or");
     }
 
     // not (logic)
     else if (strcmp(func_name->data, "not") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_LOGIC_NOT, "not", 1);
+        codegen_function_exact_args(node, bbuf, symtable, OP_LOGIC_NOT, "not", 1);
     }
 
     // print
     else if (strcmp(func_name->data, "print") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_PRINT, "print", 1);
+        codegen_function_exact_args(node, bbuf, symtable, OP_PRINT, "print", 1);
     }
 
     // println
     else if (strcmp(func_name->data, "println") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_PRINTLN, "println", 1);
+        codegen_function_exact_args(node, bbuf, symtable, OP_PRINTLN, "println", 1);
     }
 
     // concat (string concatenation)
     else if (strcmp(func_name->data, "concat") == 0) {
-        codegen_function_twoplus_args(node, bbuf, OP_CONCATSTR, "concat");
+        codegen_function_twoplus_args(node, bbuf, symtable, OP_CONCATSTR, "concat");
     }
 
     // substr (substring)
     else if (strcmp(func_name->data, "substr") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_SUBSTR, "substr", 3);
+        codegen_function_exact_args(node, bbuf, symtable, OP_SUBSTR, "substr", 3);
     }
 
     // == (numerical equality)
     else if (strcmp(func_name->data, "==") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_EQ, "==", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_EQ, "==", 2);
     }
 
     // != (numerical inequality)
     else if (strcmp(func_name->data, "!=") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_NEQ, "!=", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_NEQ, "!=", 2);
     }
 
     // < (numerical less than)
     else if (strcmp(func_name->data, "<") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_LT, "<", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_LT, "<", 2);
     }
 
     // <= (numerical less than or equal)
     else if (strcmp(func_name->data, "<=") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_LTE, "<=", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_LTE, "<=", 2);
     }
 
     // > (numerical greater than)
     else if (strcmp(func_name->data, ">") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_GT, ">", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_GT, ">", 2);
     }
 
     // >= (numerical greater than or equal)
     else if (strcmp(func_name->data, ">=") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_GTE, ">=", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_GTE, ">=", 2);
     }
 
     // str= (string equality)
     else if (strcmp(func_name->data, "str=") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_STR_EQ, "str=", 2);
+        codegen_function_exact_args(node, bbuf, symtable, OP_STR_EQ, "str=", 2);
     }
 
     // strlen (string length)
     else if (strcmp(func_name->data, "strlen") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_STRLEN, "strlen", 1);
+        codegen_function_exact_args(node, bbuf, symtable, OP_STRLEN, "strlen", 1);
     }
 
     // int2float
     else if (strcmp(func_name->data, "int2float") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_INT2FLOAT, "int2float", 1);
+        codegen_function_exact_args(node, bbuf, symtable, OP_INT2FLOAT, "int2float", 1);
     }
 
     // float2int
     else if (strcmp(func_name->data, "float2int") == 0) {
-        codegen_function_exact_args(node, bbuf, OP_FLOAT2INT, "float2int", 1);
+        codegen_function_exact_args(node, bbuf, symtable, OP_FLOAT2INT, "float2int", 1);
     }
 
 
@@ -218,7 +300,7 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf) {
     }
 }
 
-void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf) {
+void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtable) {
     switch (node->type) {
 
         // Literals
@@ -255,23 +337,39 @@ void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf) {
             break;
         }
 
-        // Symbols (lone symbol = variable, currently unsupported)
+        // Symbols (lone symbol = variable load)
         case AST_SYMBOL: {
-            codegen_error("Variable references not supported yet");
+            int var_location = symbol_table_lookup(symtable, node->symbol);
+            if (var_location == -1) {
+                char err_msg[256];
+                snprintf(err_msg, sizeof(err_msg), "Undefined variable: %s\n", node->symbol->data);
+                codegen_error(err_msg);
+            }
+
+            bytecode_emit(
+                bbuf, 
+                (Instruction){
+                    OP_LOAD_VAR, 
+                    {
+                        .type = VAL_INTEGER, 
+                        .as.integer = var_location
+                    }
+                }
+            );
             break;
         }
 
         // Function calls (lists)
         case AST_LIST: {
-            codegen_function_call(node, bbuf);
+            codegen_function_call(node, bbuf, symtable);
             break;
         }
     }
 }
 
-void codegen_compile(ASTProgram *program, BytecodeBuf *bbuf) {
+void codegen_compile(ASTProgram *program, BytecodeBuf *bbuf, SymbolTable *symtable) {
     for (int i = 0; i < program->count; i++) {
-        codegen_compile_expr(program->expressions[i], bbuf);
+        codegen_compile_expr(program->expressions[i], bbuf, symtable);
     }
     bytecode_emit(bbuf, (Instruction){OP_HALT, {0}});
 }

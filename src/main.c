@@ -24,7 +24,8 @@ int main(int argc, char *argv[]) {
     Parser *parser = parser_create(lexer);
     ASTProgram *program = parser_parse(parser);
     BytecodeBuf *bbuf = bytecode_create();
-    codegen_compile(program, bbuf);
+    SymbolTable *symtable = symbol_table_create();
+    codegen_compile(program, bbuf, symtable);
 
     VM *vm = vm_create();
     vm->code = bbuf->instructions;
@@ -32,6 +33,7 @@ int main(int argc, char *argv[]) {
     
     astprogram_free(program);
     bytecode_free(bbuf);
+    symbol_table_free(symtable);
     parser_free(parser);
     lexer_free(lexer);
     vm_free(vm);
@@ -41,10 +43,9 @@ int main(int argc, char *argv[]) {
 // TODO: 
 /*
 Todo list:
-- Implement variables
+- Implement (import "xyz")
 - Implement something to check for overflow/underflow in math ops
     - This also includes parsing numbers from .mslisp files that are bigger than what can fit in int/double
 - Implement control flow: (if cond then else) (while bool expr) (repeat n expr)
-- Implement (import "xyz")
 - Implement functions: (defun name (args) body) and (name params)
 */

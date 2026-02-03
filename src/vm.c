@@ -10,11 +10,18 @@
 
 VM* vm_create() {
     VM *vm = malloc(sizeof(VM));
+
     vm->stack_cap = 256;
     vm->stack = malloc(sizeof(Value) * vm->stack_cap);
     vm->sp = 0;
+    
+    vm->globals_cap = 8;
+    vm->globals = malloc(sizeof(Value) * vm->globals_cap);
+
     vm->pc = 0;
+    
     vm->debug = false;
+    
     vm->strings_cap = 8;
     vm->strings_count = 0;
     vm->strings = malloc(sizeof(String*) * vm->strings_cap);
@@ -26,12 +33,15 @@ void vm_free(VM *vm) {
     if (vm->debug) {
         printf("Freeing VM\n");
     }
+
     // Cleanup strings
     for (size_t i = 0; i < vm->strings_count; i++) {
         printf("String i: %d\n", (int)i);
         string_free(vm->strings[i]);
     }
+    
     free(vm->strings);
+    free(vm->globals);
 
     free(vm->stack);
     free(vm);
@@ -55,6 +65,37 @@ void stack_push_value(VM *vm, Value value) {
 
     vm->stack[vm->sp] = value;
     vm->sp++;
+}
+
+void globals_store(VM *vm, int location, Value value) {
+    if (location < 0) {
+        runtime_error("Global variable location out of bounds");
+    }
+
+    // Create more space if needed
+    if ((size_t)location >= vm->globals_cap) {
+        size_t new_cap = vm->globals_cap;
+        while ((size_t)location >= new_cap) {
+            new_cap *= 2;
+        }
+        Value *tmp = realloc(vm->globals, new_cap * sizeof *vm->globals);
+        if (!tmp) {
+            runtime_error("Unable to allocate space for globals growth");
+        }
+        vm->globals = tmp;
+        vm->globals_cap = new_cap;
+    }
+
+    // Store the value
+    vm->globals[location] = value;
+}
+
+Value globals_load(VM *vm, int location) {
+    if (location < 0 || (size_t)location >= vm->globals_cap) {
+        runtime_error("Global variable location out of bounds");
+    }
+
+    return vm->globals[location];
 }
 
 void stack_push_integer(VM *vm, int num) {
@@ -161,6 +202,23 @@ void vm_execute(VM *vm) {
                     stack_push_float(vm, anum + bnum);
                 }
 
+                break;
+            }
+            case OP_LOAD_VAR: {
+                // Load a value from a global variable and push it onto the stack
+                int location = instruction.operand.as.integer;
+                Value val = globals_load(vm, location);
+                stack_push_value(vm, val);
+                break;
+            }
+            case OP_STORE_VAR: {
+                // Store a value into a global variable
+                int location = instruction.operand.as.integer;
+                Value val = stack_pop(vm);
+                globals_store(vm, location, val);
+
+                // Also push it back onto the stack as a return value
+                stack_push_value(vm, val);
                 break;
             }
             case OP_SUB: {
@@ -297,6 +355,9 @@ void vm_execute(VM *vm) {
                         break;
                 }
                 
+                // Push it back as a return value
+                stack_push_value(vm, val);
+
                 break;
             }
             case OP_PRINTLN: {
@@ -316,6 +377,9 @@ void vm_execute(VM *vm) {
                         break;
                 }
                 
+                // Push it back as a return value
+                stack_push_value(vm, val);
+
                 break;
             }
             case OP_CONCATSTR: {

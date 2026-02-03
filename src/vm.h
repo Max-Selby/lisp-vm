@@ -9,7 +9,12 @@
  * OpCodes supported by the VM
  */
 typedef enum {
-    OP_PUSH,        // Push value onto the stack
+    // Uses operand //
+    OP_PUSH,        // Push value onto the stack                (Operand is the value to push)
+    OP_STORE_VAR,   // Pop value and store in variable          (Operand is variable location)
+    OP_LOAD_VAR,    // Load variable onto stack                 (Operand is variable location)
+
+    // Does not use operand //
     OP_ADD,         // Pop two, push sum
     OP_SUB,         // Pop two, push second - first
     OP_MUL,         // Pop two, push product
@@ -75,12 +80,18 @@ typedef struct {
  * The VM structure
  */
 typedef struct {
-    Value *stack;
+    Value *stack; // The value stack
     size_t stack_cap;
     int sp; // Stack pointer
+
+    Value *globals; // Global variables
+    size_t globals_cap; // Needs a cap but not a count since it doesn't behave like a stack
+    
     Instruction *code;
     int pc; // Program counter
+    
     bool debug; // If true print debug info
+    
     String **strings; // Strings in use by the VM
     size_t strings_count; // Number of strings in use
     size_t strings_cap; // Capacity of strings array
