@@ -27,12 +27,22 @@ void skip_whitespace(Lexer *lexer) {
     }
 }
 
+void skip_comments(Lexer *lexer) {
+    if (lexer->input[lexer->pos] == ';') {
+        while (lexer->input[lexer->pos] != '\n' && lexer->input[lexer->pos] != '\0') {
+            lexer->pos++;
+        }
+    }
+}
+
 void lexer_error(char *msg) {
     printf("Lexer error: %s\n", msg);
     exit(1);
 }
 
 Token lexer_next_token(Lexer *lexer) {
+    skip_whitespace(lexer);
+    skip_comments(lexer);
     skip_whitespace(lexer);
 
     Token token;
@@ -65,6 +75,16 @@ Token lexer_next_token(Lexer *lexer) {
             }
             lexer->pos++;
         }
+
+        if (
+            lexer->input[lexer->pos] != '\0' &&
+            !isspace(lexer->input[lexer->pos]) &&
+            lexer->input[lexer->pos] != LPAREN_CHAR &&
+            lexer->input[lexer->pos] != RPAREN_CHAR
+        ) {
+            lexer_error("Invalid number format: unexpected character after number! Did you forget a space?");
+        }
+
         int len = lexer->pos - start;
 
         if (decimals == 0) {
