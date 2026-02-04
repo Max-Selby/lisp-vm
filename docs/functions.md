@@ -55,8 +55,11 @@ Note that every function returns something; this is a rule for the language.
 ### substr
 - Takes three arguments: string, index, length. Produces a substring of string starting at index. The first character is index 0.
 
-### ==
+### =
 - Check equality of two numbers. Returns true or false. Comparing integers and floats is allowed.
+
+### ==
+- Exactly the same as `=`.
 
 ### !=
 - Check inequality of two numbers. Returns true or false. Comparing integers and floats is allowed.

@@ -210,7 +210,6 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         // Jump if false placeholder
         int jmp_false_insn_index = bbuf->count;
         bytecode_emit(bbuf, (Instruction){OP_HALT, {0}}); // Placeholder for jump address
-
         bytecode_emit(bbuf, (Instruction){OP_JMP_IF_FALSE, {0}});
 
         // Compile body
@@ -227,6 +226,44 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         bbuf->instructions[jmp_false_insn_index].opCode = OP_PUSH;
         bbuf->instructions[jmp_false_insn_index].operand.type = VAL_INTEGER;
         bbuf->instructions[jmp_false_insn_index].operand.as.integer = end_addr;
+    }
+
+    // if (conditional)
+    else if (strcmp(func_name->data, "if") == 0) {
+        if (node->list.count != 4) {
+            codegen_error("if expects exactly 3 arguments");
+        }
+
+        // Compile condition expression
+        codegen_compile_expr(node->list.children[1], bbuf, symtable);
+
+        // Jump if false placeholder (jump past "then" block)
+        int jmp_past_then_insn_idx = bbuf->count;
+        bytecode_emit(bbuf, (Instruction){OP_HALT, {0}}); // Placeholder for jump address
+        bytecode_emit(bbuf, (Instruction){OP_JMP_IF_FALSE, {0}});
+
+        // Compile "then" block
+        codegen_compile_expr(node->list.children[2], bbuf, symtable);
+
+        // Jump placeholder (jump past "else" block)
+        int jmp_past_else_insn_idx = bbuf->count;
+        bytecode_emit(bbuf, (Instruction){OP_HALT, {0}}); // Placeholder for jump address
+        bytecode_emit(bbuf, (Instruction){OP_JMP, {0}});
+
+        // Fix jump placeholder #1
+        int past_then_addr = bbuf->count;
+        bbuf->instructions[jmp_past_then_insn_idx].opCode = OP_PUSH;
+        bbuf->instructions[jmp_past_then_insn_idx].operand.type = VAL_INTEGER;
+        bbuf->instructions[jmp_past_then_insn_idx].operand.as.integer = past_then_addr;
+
+        // Compile "else" block
+        codegen_compile_expr(node->list.children[3], bbuf, symtable);
+
+        // Fix jump placeholder #2
+        int past_else_addr = bbuf->count;
+        bbuf->instructions[jmp_past_else_insn_idx].opCode = OP_PUSH;
+        bbuf->instructions[jmp_past_else_insn_idx].operand.type = VAL_INTEGER;
+        bbuf->instructions[jmp_past_else_insn_idx].operand.as.integer = past_else_addr;
     }
 
     // + (addition)
@@ -289,7 +326,12 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         codegen_function_exact_args(node, bbuf, symtable, OP_SUBSTR, "substr", 3);
     }
 
-    // == (numerical equality)
+    // = (numerical equality)
+    else if (strcmp(func_name->data, "=") == 0) {
+        codegen_function_exact_args(node, bbuf, symtable, OP_EQ, "=", 2);
+    }
+    
+    // == (also numerical equality)
     else if (strcmp(func_name->data, "==") == 0) {
         codegen_function_exact_args(node, bbuf, symtable, OP_EQ, "==", 2);
     }
