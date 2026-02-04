@@ -44,10 +44,14 @@ Note that every function returns something; this is a rule for the language.
 - Logic "not" on one boolean.
 
 ### print
-- Print the value of the argument to the console. Argument type does not matter. Returns the printed value.
+- Print the values of the arguments to the console. Argument type does not matter.
+- Needs at least one argument.
+- Returns the value of the last argument.
 
 ### println
-- Print the value of the argument to the console and add a newline. Argument type does not matter. Returns the printed value.
+- Print the values of the arguments to the console and add a newline. Argument type does not matter.
+- Needs at least one argument.
+- Returns the value of the last argument.
 
 ### concat
 - Concatenate two or more strings.

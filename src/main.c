@@ -42,13 +42,18 @@ int main(int argc, char *argv[]) {
 
 // TODO:
 /*
-Todo list:
-- Implement (import "xyz")
-- Implement something to check for overflow/underflow in math ops
-    - This also includes parsing numbers from .mslisp files that are bigger than what can fit in int/double
-- Implement control flow: 
-    - (if cond then else)
+Todo list (in order of priority):
+- Implement (import "xyz")  <-- need to ensure argument is a string literal (variables can't work since imports not @ runtime)
+- Implement lists: [item1 item2 item3 ...]
+- Implement local variables: (let [[var1 val1] [var2 val2]] expr)
+- Implement control flow:
+    - (if cond then else)   [DONE]
     - (while bool expr)     [DONE]
     - (repeat n expr)
-- Implement functions: (defun name (args) body) and (name params)
+    - (for var start end expr)  -- Make sure var is a local variable, scope is within the loop only.
+- Implement REPL: make it so if you run lvm with no args it goes into REPL mode. Should be really easy.
+- Implement something to check for overflow/underflow in math ops
+    - This also includes parsing numbers from .mslisp files that are bigger than what can fit in int/double
+- Implement functions: (defun name [args] body) and (name params)
+- Create libraries of common functions (math, string manipulation, etc.)
 */

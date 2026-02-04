@@ -308,12 +308,32 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
 
     // print
     else if (strcmp(func_name->data, "print") == 0) {
-        codegen_function_exact_args(node, bbuf, symtable, OP_PRINT, "print", 1);
+        if (node->list.count < 2) {
+            codegen_error("print expects at least 1 argument");
+        }
+
+        // Compile all argument expressions
+        for (int i = 1; i < node->list.count; i++) {
+            codegen_compile_expr(node->list.children[i], bbuf, symtable);
+
+            // Print each argument
+            bytecode_emit(bbuf, (Instruction){OP_PRINT, {0}});
+        }
     }
 
     // println
     else if (strcmp(func_name->data, "println") == 0) {
-        codegen_function_exact_args(node, bbuf, symtable, OP_PRINTLN, "println", 1);
+        if (node->list.count < 2) {
+            codegen_error("println expects at least 1 argument");
+        }
+
+        // Compile all argument expressions
+        for (int i = 1; i < node->list.count; i++) {
+            codegen_compile_expr(node->list.children[i], bbuf, symtable);
+
+            // Print each argument
+            bytecode_emit(bbuf, (Instruction){OP_PRINTLN, {0}});
+        }
     }
 
     // concat (string concatenation)
