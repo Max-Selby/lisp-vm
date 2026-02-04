@@ -15,6 +15,10 @@ Note that every function returns something; this is a rule for the language.
 - Execute a sequence of operations. The result of the final operation will be returned.
 - Example: (do (define x 1) (define y 2) (+ x y))
 
+### while
+- Syntax: (while cond expr1 expr2 ...)
+- Evaluates all expressions until cond is true (or does nothing if cond was true from the start).
+
 ### +
 - Add two or more numbers together. If one is a float, the result will be a float.
 
