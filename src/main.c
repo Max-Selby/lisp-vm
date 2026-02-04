@@ -40,12 +40,15 @@ int main(int argc, char *argv[]) {
     free(source);
 }
 
-// TODO: 
+// TODO:
 /*
 Todo list:
 - Implement (import "xyz")
 - Implement something to check for overflow/underflow in math ops
     - This also includes parsing numbers from .mslisp files that are bigger than what can fit in int/double
-- Implement control flow: (if cond then else) (while bool expr) (repeat n expr)
+- Implement control flow: 
+    - (if cond then else)
+    - (while bool expr)     [DONE]
+    - (repeat n expr)
 - Implement functions: (defun name (args) body) and (name params)
 */

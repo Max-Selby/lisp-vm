@@ -40,6 +40,7 @@ typedef enum {
     OP_STRLEN,      // Pop a string, push its integer length
     OP_JMP,         // Pop an integer, jump to the instruction at that address
     OP_JMP_IF,      // Pop an integer then a bool. If the bool is true, jump.
+    OP_JMP_IF_FALSE,// Pop an integer then a bool. If the bool is false, jump.
     OP_INT2FLOAT,   // Pop an int, push float representation of its value
     OP_FLOAT2INT,   // Pop a float, push integer representation of its value
     OP_HALT         // Stop execution

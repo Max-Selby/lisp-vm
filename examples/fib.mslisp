@@ -1,0 +1,12 @@
+(println (define x 0))
+(println (define y 1))
+
+(define loops 20)
+(define iter 0)
+
+(while (< iter loops)
+    (define z (+ x y))
+    (define x y)
+    (define y z)
+    (define iter (+ 1 iter))
+    (println x))

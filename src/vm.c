@@ -600,7 +600,7 @@ void vm_execute(VM *vm) {
                 if (a.as.integer < 0) {
                     runtime_error("Cannot jump to negative address!");
                 }
-                
+
                 // Jump there. Don't have to worry about PC increasing, since that happens at the
                 // beginning of the loop AFTER grabbing the instruction
                 vm->pc = a.as.integer;
@@ -619,8 +619,27 @@ void vm_execute(VM *vm) {
                 if (condition.type != VAL_BOOL) {
                     runtime_error("Conditional jump failed: wrong condition type (should be boolean)");
                 }
-                
+
                 if (condition.as.boolean) {
+                    vm->pc = a.as.integer;
+                }
+                break;
+            }
+            case OP_JMP_IF_FALSE: {
+                Value a = stack_pop(vm);
+                Value condition = stack_pop(vm);
+
+                if (a.type != VAL_INTEGER) {
+                    runtime_error("Cannot jump to non-integer address!");
+                }
+                if (a.as.integer < 0) {
+                    runtime_error("Cannot jump to negative address!");
+                }
+                if (condition.type != VAL_BOOL) {
+                    runtime_error("Conditional jump failed: wrong condition type (should be boolean)");
+                }
+
+                if (!condition.as.boolean) {
                     vm->pc = a.as.integer;
                 }
                 break;

@@ -195,6 +195,40 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         // (The value of the last expression will be the result)
     }
 
+    // while (loop)
+    else if (strcmp(func_name->data, "while") == 0) {
+        if (node->list.count < 3) {
+            codegen_error("while expects at least 2 arguments");
+        }
+
+        // Remember loop start address
+        int loop_start_addr = bbuf->count;
+
+        // Compile condition expression
+        codegen_compile_expr(node->list.children[1], bbuf, symtable);
+
+        // Jump if false placeholder
+        int jmp_false_insn_index = bbuf->count;
+        bytecode_emit(bbuf, (Instruction){OP_HALT, {0}}); // Placeholder for jump address
+
+        bytecode_emit(bbuf, (Instruction){OP_JMP_IF_FALSE, {0}});
+
+        // Compile body
+        for (int i = 2; i < node->list.count; i++) {
+            codegen_compile_expr(node->list.children[i], bbuf, symtable);
+        }
+
+        // Jump back to loop start
+        bytecode_emit(bbuf, (Instruction){OP_PUSH, {.type = VAL_INTEGER, .as.integer = loop_start_addr}});
+        bytecode_emit(bbuf, (Instruction){OP_JMP, {0}});
+
+        // Fix up the jump false instruction to jump here
+        int end_addr = bbuf->count;
+        bbuf->instructions[jmp_false_insn_index].opCode = OP_PUSH;
+        bbuf->instructions[jmp_false_insn_index].operand.type = VAL_INTEGER;
+        bbuf->instructions[jmp_false_insn_index].operand.as.integer = end_addr;
+    }
+
     // + (addition)
     else if (strcmp(func_name->data, "+") == 0) {
         codegen_function_twoplus_args(node, bbuf, symtable, OP_ADD, "+");
