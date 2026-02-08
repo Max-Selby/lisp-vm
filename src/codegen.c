@@ -266,6 +266,25 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         bbuf->instructions[jmp_past_else_insn_idx].operand.as.integer = past_else_addr;
     }
 
+    // list (create list)
+    else if (strcmp(func_name->data, "list") == 0) {
+        if (node->list.count < 1) {
+            codegen_error("list expects at least 0 arguments");
+        }
+
+        // Compile all element expressions
+        for (int i = 1; i < node->list.count; i++) {
+            codegen_compile_expr(node->list.children[i], bbuf, symtable);
+        }
+
+        // Emit MAKE_LIST instruction
+        Instruction make_list_insn;
+        make_list_insn.opCode = OP_MAKE_LIST;
+        make_list_insn.operand.type = VAL_INTEGER;
+        make_list_insn.operand.as.integer = node->list.count - 1; // Number of elements
+        bytecode_emit(bbuf, make_list_insn);
+    }
+
     // + (addition)
     else if (strcmp(func_name->data, "+") == 0) {
         codegen_function_twoplus_args(node, bbuf, symtable, OP_ADD, "+");

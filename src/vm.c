@@ -18,6 +18,10 @@ VM* vm_create() {
     vm->globals_cap = 8;
     vm->globals = malloc(sizeof(Value) * vm->globals_cap);
 
+    vm->allocated_lists_cap = 8;
+    vm->allocated_lists_count = 0;
+    vm->allocated_lists = malloc(sizeof(List*) * vm->allocated_lists_cap);
+
     vm->pc = 0;
     
     vm->debug = false;
@@ -39,6 +43,13 @@ void vm_free(VM *vm) {
         printf("String i: %d\n", (int)i);
         string_free(vm->strings[i]);
     }
+
+    // Cleanup lists
+    for (size_t i = 0; i < vm->allocated_lists_count; i++) {
+        free(vm->allocated_lists[i]->elements);
+        free(vm->allocated_lists[i]);
+    }
+    free(vm->allocated_lists);
     
     free(vm->strings);
     free(vm->globals);
@@ -164,6 +175,35 @@ String *vm_string_new(VM *vm) {
     return s;
 }
 
+void print_list(List *list) {
+    printf("[");
+    for (size_t i = 0; i < list->count; i++) {
+        Value val = list->elements[i];
+        switch (val.type) {
+            case VAL_INTEGER:
+                printf("%d", val.as.integer);
+                break;
+            case VAL_FLOAT:
+                printf("%f", val.as.floating);
+                break;
+            case VAL_BOOL:
+                printf(val.as.boolean == true ? "true" : "false");
+                break;
+            case VAL_STRING:
+                // Surround string with quotes in this case to avoid confusion
+                printf("\"%s\"", val.as.string->data);
+                break;
+            case VAL_LIST:
+                print_list(val.as.list);
+                break;
+        }
+        if (i < list->count - 1) {
+            printf(" ");
+        }
+    }
+    printf("]");
+}
+
 void vm_execute(VM *vm) {
     while (true) {
         if (vm->debug) {
@@ -179,6 +219,71 @@ void vm_execute(VM *vm) {
         switch (instruction.opCode) {
             case OP_PUSH: {
                 stack_push_value(vm, instruction.operand);
+                break;
+            }
+            case OP_LOAD_VAR: {
+                // Load a value from a global variable and push it onto the stack
+                if (instruction.operand.type != VAL_INTEGER) {
+                    runtime_error("Variable location must be an integer!");
+                }
+                int location = instruction.operand.as.integer;
+                Value val = globals_load(vm, location);
+                stack_push_value(vm, val);
+                break;
+            }
+            case OP_STORE_VAR: {
+                // Store a value into a global variable
+                if (instruction.operand.type != VAL_INTEGER) {
+                    runtime_error("Variable location must be an integer!");
+                }
+                int location = instruction.operand.as.integer;
+                Value val = stack_pop(vm);
+                globals_store(vm, location, val);
+
+                // Also push it back onto the stack as a return value
+                stack_push_value(vm, val);
+                break;
+            }
+            case OP_MAKE_LIST: {
+                if (instruction.operand.type != VAL_INTEGER) {
+                    runtime_error("Make list operand must be an integer!");
+                }
+                int count = instruction.operand.as.integer;
+                
+                List *list = malloc(sizeof(List));
+                list->count = (size_t)count;
+                list->capacity = (size_t)count;
+                if (list->capacity < 8) {
+                    list->capacity = 8;
+                }
+                list->elements = malloc(sizeof(Value) * list->capacity);
+
+                // Pop from stack in reverse order so that the first element ends up at the front of the list
+                for (size_t i = 0; i < list->count; i++) {
+                    list->elements[list->count - 1 - i] = stack_pop(vm);
+                }
+
+                // Add to allocated lists for cleanup later
+                if (vm->allocated_lists_count >= vm->allocated_lists_cap) {
+                    vm->allocated_lists_cap *= 2;
+                    List **tmp = realloc(
+                        vm->allocated_lists,
+                        sizeof(List*) * vm->allocated_lists_cap
+                    );
+                    if (tmp == NULL) {
+                        runtime_error("Failed to reallocate allocated lists!");
+                    }
+                    vm->allocated_lists = tmp;
+                }
+                vm->allocated_lists[vm->allocated_lists_count] = list;
+                vm->allocated_lists_count++;
+
+                // Push the list onto the stack
+                Value val;
+                val.type = VAL_LIST;
+                val.as.list = list;
+                stack_push_value(vm, val);
+
                 break;
             }
             case OP_ADD: {
@@ -202,23 +307,6 @@ void vm_execute(VM *vm) {
                     stack_push_float(vm, anum + bnum);
                 }
 
-                break;
-            }
-            case OP_LOAD_VAR: {
-                // Load a value from a global variable and push it onto the stack
-                int location = instruction.operand.as.integer;
-                Value val = globals_load(vm, location);
-                stack_push_value(vm, val);
-                break;
-            }
-            case OP_STORE_VAR: {
-                // Store a value into a global variable
-                int location = instruction.operand.as.integer;
-                Value val = stack_pop(vm);
-                globals_store(vm, location, val);
-
-                // Also push it back onto the stack as a return value
-                stack_push_value(vm, val);
                 break;
             }
             case OP_SUB: {
@@ -353,6 +441,9 @@ void vm_execute(VM *vm) {
                     case VAL_STRING:
                         printf("%s", val.as.string->data);
                         break;
+                    case VAL_LIST:
+                        print_list(val.as.list);
+                        break;
                 }
                 
                 // Push it back as a return value
@@ -374,6 +465,10 @@ void vm_execute(VM *vm) {
                         break;
                     case VAL_STRING:
                         printf("%s\n", val.as.string->data);
+                        break;
+                    case VAL_LIST:
+                        print_list(val.as.list);
+                        printf("\n");
                         break;
                 }
                 

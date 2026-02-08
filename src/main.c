@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 /*
 Todo list (in order of priority):
 - Implement (import "xyz")  <-- need to ensure argument is a string literal (variables can't work since imports not @ runtime)
+    - Also (soft-import) that just returns false if file not found instead of erroring out.
 - Implement lists: [item1 item2 item3 ...]
 - Implement local variables: (let [[var1 val1] [var2 val2]] expr)
 - Implement control flow:

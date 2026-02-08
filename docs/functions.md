@@ -4,6 +4,9 @@
 Note that every function returns something; this is a rule for the language.
 
 ### import
+- Takes one argument, which should be a string filepath. Imports the code and runs it here. Errors on failure. Returns true.
+
+### soft-import
 - Takes one argument, which should be a string filepath. Imports the code and runs it here. Returns true on success and false on failure.
 
 ### define
@@ -18,6 +21,10 @@ Note that every function returns something; this is a rule for the language.
 ### while
 - Syntax: (while cond expr1 expr2 ...)
 - Evaluates all expressions until cond is true (or does nothing if cond was true from the start).
+
+### list
+- Create a list of the arguments. Can be empty.
+- E.g. (list 1 2 3 true false "hello")
 
 ### +
 - Add two or more numbers together. If one is a float, the result will be a float.

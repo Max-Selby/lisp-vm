@@ -5,6 +5,9 @@
 
 #include <stdbool.h>
 
+// Forward declaration
+typedef struct Value Value;
+
 /**
  * OpCodes supported by the VM
  */
@@ -13,6 +16,7 @@ typedef enum {
     OP_PUSH,        // Push value onto the stack                (Operand is the value to push)
     OP_STORE_VAR,   // Pop value and store in variable          (Operand is variable location)
     OP_LOAD_VAR,    // Load variable onto stack                 (Operand is variable location)
+    OP_MAKE_LIST,   // Pop n values and make list               (Operand is number of elements)
 
     // Does not use operand //
     OP_ADD,         // Pop two, push sum
@@ -47,27 +51,38 @@ typedef enum {
 } OpCode;
 
 /**
+ * List object for VM
+ */
+typedef struct {
+    Value *elements;
+    size_t count;
+    size_t capacity;
+} List;
+
+/**
  * Value types supported by the VM
  */
 typedef enum {
     VAL_INTEGER,
     VAL_FLOAT,
     VAL_BOOL,
-    VAL_STRING
+    VAL_STRING,
+    VAL_LIST
 } ValueType;
 
 /**
  * A VM value
  */
-typedef struct {
+struct Value {
     ValueType type;
     union {
         int integer;
         double floating;
         bool boolean;
         String *string;
+        List *list;
     } as;
-} Value;
+};
 
 /**
  * A VM instruction
@@ -87,6 +102,10 @@ typedef struct {
 
     Value *globals; // Global variables
     size_t globals_cap; // Needs a cap but not a count since it doesn't behave like a stack
+
+    List **allocated_lists; // Lists allocated by the VM (for cleanup purposes)
+    size_t allocated_lists_count;
+    size_t allocated_lists_cap;
     
     Instruction *code;
     int pc; // Program counter
