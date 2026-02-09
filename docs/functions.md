@@ -42,7 +42,7 @@ Note that every function returns something; this is a rule for the language.
 - Takes a list, an integer, and a value. Returns a copy of the list with the value at that index replaced with the new value. List indexing starts at 0.
 - Does not mutate the original list
 
-### list-at
+### list-get
 - Takes a list and an integer. Returns the value at that index of the list. List indexing starts at 0.
 
 ### list-length

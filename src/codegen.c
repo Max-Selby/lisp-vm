@@ -285,6 +285,49 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         bytecode_emit(bbuf, make_list_insn);
     }
 
+    // list-append (append to list)
+    else if (strcmp(func_name->data, "list-append") == 0) {
+        if (node->list.count < 2) {
+            codegen_error("list-append expects at least 1 argument");
+        }
+
+        // Compile all argument expressions in reverse order
+        // (Because the opcode will pop them in order, we need to push them in reverse order)
+        for (int i = node->list.count - 1; i > 0; i--) {
+            codegen_compile_expr(node->list.children[i], bbuf, symtable);
+        }
+
+        // Emit enough LIST_APPEND instructions
+        for (int i = 2; i < node->list.count; i++) {
+            bytecode_emit(bbuf, (Instruction){OP_LIST_APPEND, {0}});
+        }
+    }
+
+    // list-sublist
+    else if (strcmp(func_name->data, "list-sublist") == 0) {
+        codegen_function_exact_args(node, bbuf, symtable, OP_LIST_SUBLIST, "list-sublist", 3);
+    }
+
+    // list-remove
+    else if (strcmp(func_name->data, "list-remove") == 0) {
+        codegen_function_exact_args(node, bbuf, symtable, OP_LIST_REMOVE, "list-remove", 2);
+    }
+
+    // list-set
+    else if (strcmp(func_name->data, "list-set") == 0) {
+        codegen_function_exact_args(node, bbuf, symtable, OP_LIST_SET, "list-set", 3);
+    }
+
+    // list-get
+    else if (strcmp(func_name->data, "list-get") == 0) {
+        codegen_function_exact_args(node, bbuf, symtable, OP_LIST_GET, "list-get", 2);
+    }
+
+    // list-length
+    else if (strcmp(func_name->data, "list-length") == 0) {
+        codegen_function_exact_args(node, bbuf, symtable, OP_LIST_LEN, "list-length", 1);
+    }
+
     // + (addition)
     else if (strcmp(func_name->data, "+") == 0) {
         codegen_function_twoplus_args(node, bbuf, symtable, OP_ADD, "+");
