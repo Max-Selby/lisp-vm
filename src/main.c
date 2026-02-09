@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 // TODO:
 /*
 Todo list (in order of priority):
-- Implement local variables: (let [[var1 val1] [var2 val2]] expr)
+- Implement local variables: (let [var1 val1 var2 val2] expr)
 - Implement control flow:
     - (if cond then else)   [DONE]
     - (while bool expr)     [DONE]

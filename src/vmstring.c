@@ -75,13 +75,14 @@ bool string_substr(String *s, size_t start, size_t length) {
     size_t srcLen = s->len;
     if (start >= srcLen || start + length > srcLen) return false;
     
+    memmove(s->data, s->data + start, length);
+    s->data[length] = '\0';
+
     char *tmp = realloc(s->data, length + 1);
     if (!tmp) return false;
 
     s->data = tmp;
-    memmove(s->data, s->data + start, length);
     s->cap = length + 1;
-    s->data[length] = '\0';
     s->len = length;
     return true;
 }

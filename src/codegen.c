@@ -408,6 +408,20 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         codegen_function_exact_args(node, bbuf, symtable, OP_SUBSTR, "substr", 3);
     }
 
+    else if (strcmp(func_name->data, "char-at") == 0) {
+        if (node->list.count != 3) {
+            codegen_error("char-at expects exactly 2 arguments");
+        }
+
+        // Compile args: string, index, and constant length 1 for the substring length
+        codegen_compile_expr(node->list.children[1], bbuf, symtable);
+        codegen_compile_expr(node->list.children[2], bbuf, symtable);
+        bytecode_emit(bbuf, (Instruction){OP_PUSH, {.type = VAL_INTEGER, .as.integer = 1}});
+
+        // Add function opcode
+        bytecode_emit(bbuf, (Instruction){OP_SUBSTR, {0}});
+    }
+
     // = (numerical equality)
     else if (strcmp(func_name->data, "=") == 0) {
         codegen_function_exact_args(node, bbuf, symtable, OP_EQ, "=", 2);
@@ -467,7 +481,9 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
 
     // Unsupported function
     else {
-        codegen_error("Unsupported function call");
+        char err_msg[256];
+        snprintf(err_msg, sizeof(err_msg), "Unsupported function call: %s\n", func_name->data);
+        codegen_error(err_msg);
     }
 }
 
