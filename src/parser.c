@@ -65,7 +65,7 @@ ASTNode* parse_atom(Parser *parser) {
 
 ASTNode* parse_list(Parser *parser) {
     if (parser->current_token.type != TOKEN_LPAREN) {
-        parser_error("Expected '(' at start of list");
+        parser_error("Expected '(' at start of expression");
     }
     parser_advance(parser); // consume '('
 
@@ -79,7 +79,7 @@ ASTNode* parse_list(Parser *parser) {
     // Parse children until ')'
     while (parser->current_token.type != TOKEN_RPAREN) {
         if (parser->current_token.type == TOKEN_EOF) {
-            parser_error("Unexpected EOF while parsing list");
+            parser_error("Unexpected EOF while parsing expression");
         }
 
         // Make space for new child if needed
@@ -103,15 +103,63 @@ ASTNode* parse_list(Parser *parser) {
     return node;
 }
 
+ASTNode* parse_list_literal(Parser *parser) {
+    if (parser->current_token.type != TOKEN_LIST_OPEN) {
+        parser_error("Expected '[' at start of list literal");
+    }
+    parser_advance(parser); // consume '['
+
+    // Create list literal node
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->type = AST_LITERAL_LIST;
+    node->list_literal.count = 0;
+    node->list_literal.capacity = 4;
+    node->list_literal.children = malloc(sizeof(ASTNode*) * node->list_literal.capacity);
+
+    // Parse children until ']'
+    while (parser->current_token.type != TOKEN_LIST_CLOSE) {
+        if (parser->current_token.type == TOKEN_EOF) {
+            parser_error("Unexpected EOF while parsing list literal");
+        }
+
+        // Make space for new child if needed
+        if (node->list_literal.count >= node->list_literal.capacity) {
+            node->list_literal.capacity *= 2;
+            ASTNode **tmp = realloc(
+                node->list_literal.children,
+                sizeof(ASTNode*) * node->list_literal.capacity
+            );
+            if (!tmp) {
+                parser_error("Couldn't realloc children array for AST list literal");
+            }
+            node->list_literal.children = tmp;
+        }
+
+        // Parse children recursively
+        node->list_literal.children[node->list_literal.count++] = parse_expr(parser);
+    }
+
+    parser_advance(parser); // consume ']'
+    return node;
+}
+
 // Parse a single expression (atom or list)
 ASTNode* parse_expr(Parser *parser) {
     if (parser->current_token.type == TOKEN_EOF) {
         parser_error("Unexpected end of input");
     }
+    if (parser->current_token.type == TOKEN_RPAREN) {
+        parser_error("Unexpected ')'");
+    }
+    if (parser->current_token.type == TOKEN_LIST_CLOSE) {
+        parser_error("Unexpected ']'");
+    }
     
     if (parser->current_token.type == TOKEN_LPAREN) {
         // This will recursively call parse_expr for children
         return parse_list(parser);
+    } else if (parser->current_token.type == TOKEN_LIST_OPEN) {
+        return parse_list_literal(parser);
     } else {
         return parse_atom(parser);
     }
@@ -197,6 +245,16 @@ void astnode_print(ASTNode *node) {
             break;
         case AST_SYMBOL:
             printf("%s", node->symbol->data);
+            break;
+        case AST_LITERAL_LIST:
+            printf("[");
+            for (int i = 0; i < node->list_literal.count; i++) {
+                astnode_print(node->list_literal.children[i]);
+                if (i < node->list_literal.count - 1) {
+                    printf(" ");
+                }
+            }
+            printf("]");
             break;
         case AST_LIST:
             printf("(");

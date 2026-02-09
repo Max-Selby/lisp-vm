@@ -507,6 +507,21 @@ void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtabl
             bytecode_emit(bbuf, insn);
             break;
         }
+        // List literal e.g. [1 2 3]
+        case AST_LITERAL_LIST: {
+            // Compile all element expressions
+            for (int i = 0; i < node->list_literal.count; i++) {
+                codegen_compile_expr(node->list_literal.children[i], bbuf, symtable);
+            }
+
+            // Emit MAKE_LIST instruction
+            Instruction make_list_insn;
+            make_list_insn.opCode = OP_MAKE_LIST;
+            make_list_insn.operand.type = VAL_INTEGER;
+            make_list_insn.operand.as.integer = node->list_literal.count; // Number of elements
+            bytecode_emit(bbuf, make_list_insn);
+            break;
+        }
 
         // Symbols (lone symbol = variable load)
         case AST_SYMBOL: {

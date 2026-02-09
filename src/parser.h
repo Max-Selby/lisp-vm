@@ -10,6 +10,7 @@ typedef enum {
     AST_BOOL,
     AST_STRING,
     AST_SYMBOL,
+    AST_LITERAL_LIST, // A list literal, e.g. [1 2 3]. This is NOT the same as an AST_LIST, which represents a function call
     AST_LIST    // "List" = anything in parenthesis; (+ 1 2) is a list
 } ASTNodeType;
 
@@ -26,6 +27,11 @@ typedef struct ASTNode {
             int count;
             int capacity;
         } list;
+        struct {
+            struct ASTNode **children;
+            int count;
+            int capacity;
+        } list_literal;
     };
 } ASTNode;
 

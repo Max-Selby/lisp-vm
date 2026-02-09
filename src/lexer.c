@@ -13,6 +13,8 @@
 #define BOOL_FALSE ("false")
 #define LPAREN_CHAR ('(')
 #define RPAREN_CHAR (')')
+#define OPEN_LIST_CHAR ('[')
+#define CLOSE_LIST_CHAR (']')
 
 Lexer* lexer_create(char *input) {
     Lexer *lexer = malloc(sizeof(Lexer));
@@ -61,6 +63,18 @@ Token lexer_next_token(Lexer *lexer) {
 
     if (current == RPAREN_CHAR) {
         token.type = TOKEN_RPAREN;
+        lexer->pos++;
+        return token;
+    }
+
+    if (current == OPEN_LIST_CHAR) {
+        token.type = TOKEN_LIST_OPEN;
+        lexer->pos++;
+        return token;
+    }
+
+    if (current == CLOSE_LIST_CHAR) {
+        token.type = TOKEN_LIST_CLOSE;
         lexer->pos++;
         return token;
     }

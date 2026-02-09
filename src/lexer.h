@@ -6,13 +6,15 @@
 #include "vmstring.h"
 
 typedef enum {
-    TOKEN_LPAREN,   // (
-    TOKEN_RPAREN,   // )
-    TOKEN_INTEGER,  // 123
-    TOKEN_FLOAT,    // 123.4
-    TOKEN_BOOL,     // true, false
-    TOKEN_STRING,   // "Hi"
-    TOKEN_SYMBOL,   // +, -, defun, etc.
+    TOKEN_LPAREN,     // (
+    TOKEN_RPAREN,     // )
+    TOKEN_LIST_OPEN,  // [
+    TOKEN_LIST_CLOSE, // ]
+    TOKEN_INTEGER,    // 123
+    TOKEN_FLOAT,      // 123.4
+    TOKEN_BOOL,       // true, false
+    TOKEN_STRING,     // "Hi"
+    TOKEN_SYMBOL,     // +, -, defun, etc.
     TOKEN_EOF
 } TokenType;
 
