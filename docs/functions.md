@@ -26,6 +26,28 @@ Note that every function returns something; this is a rule for the language.
 - Create a list of the arguments. Can be empty.
 - E.g. (list 1 2 3 true false "hello")
 
+### list-append
+- Takes a list any number of another values. Returns a copy of the list with those values appended.
+- Does not mutate the original list
+
+### list-sublist
+- Takes three arguments: list, start, length. Then returns a sublist starting at start, of length length. List indexing starts at 0.
+- Does not mutate the original list
+
+### list-remove
+- Takes a list and an integer. Returns a copy of the list with the value at that index removed. List indexing starts at 0.
+- Does not mutate the original list
+
+### list-set
+- Takes a list, an integer, and a value. Returns a copy of the list with the value at that index replaced with the new value. List indexing starts at 0.
+- Does not mutate the original list
+
+### list-at
+- Takes a list and an integer. Returns the value at that index of the list. List indexing starts at 0.
+
+### list-length
+- Takes a list and returns its integer length (number of elements).
+
 ### +
 - Add two or more numbers together. If one is a float, the result will be a float.
 

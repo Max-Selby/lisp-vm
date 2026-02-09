@@ -204,6 +204,34 @@ void print_list(List *list) {
     printf("]");
 }
 
+void vm_register_list(VM *vm, List *list) {
+    if (vm->allocated_lists_count >= vm->allocated_lists_cap) {
+        vm->allocated_lists_cap *= 2;
+        List **tmp = realloc(
+            vm->allocated_lists,
+            sizeof(List*) * vm->allocated_lists_cap
+        );
+        if (tmp == NULL) {
+            runtime_error("Failed to reallocate allocated lists!");
+        }
+        vm->allocated_lists = tmp;
+    }
+    vm->allocated_lists[vm->allocated_lists_count] = list;
+    vm->allocated_lists_count++;
+}
+
+List *list_copy(List *source) {
+    if (!source) return NULL;
+    List *copy = malloc(sizeof(List));
+    copy->count = source->count;
+    copy->capacity = source->capacity;
+    copy->elements = malloc(sizeof(Value) * copy->capacity);
+    for (size_t i = 0; i < copy->count; i++) {
+        copy->elements[i] = source->elements[i];
+    }
+    return copy;
+}
+
 void vm_execute(VM *vm) {
     while (true) {
         if (vm->debug) {
@@ -264,19 +292,7 @@ void vm_execute(VM *vm) {
                 }
 
                 // Add to allocated lists for cleanup later
-                if (vm->allocated_lists_count >= vm->allocated_lists_cap) {
-                    vm->allocated_lists_cap *= 2;
-                    List **tmp = realloc(
-                        vm->allocated_lists,
-                        sizeof(List*) * vm->allocated_lists_cap
-                    );
-                    if (tmp == NULL) {
-                        runtime_error("Failed to reallocate allocated lists!");
-                    }
-                    vm->allocated_lists = tmp;
-                }
-                vm->allocated_lists[vm->allocated_lists_count] = list;
-                vm->allocated_lists_count++;
+                vm_register_list(vm, list);
 
                 // Push the list onto the stack
                 Value val;
@@ -771,6 +787,168 @@ void vm_execute(VM *vm) {
                 else {
                     runtime_error("Cannot convert non-number to integer!");
                 }
+                break;
+            }
+            case OP_LIST_APPEND: {
+                Value source_list = stack_pop(vm);
+                Value the_val = stack_pop(vm);
+
+                if (source_list.type != VAL_LIST) {
+                    runtime_error("Cannot append to non-list!");
+                }
+
+                List *new_list = list_copy(source_list.as.list);
+                vm_register_list(vm, new_list);
+
+                // Grow new list if needed
+                if (new_list->count + 1 >= new_list->capacity) {
+                    new_list->capacity *= 2;
+                    Value *tmp = realloc(new_list->elements, sizeof(Value) * new_list->capacity);
+                    if (!tmp) {
+                        runtime_error("Unable to allocate space for list append!");
+                    }
+                    new_list->elements = tmp;
+                }
+
+                // Add value to end of new list
+                new_list->elements[new_list->count] = the_val;
+                new_list->count++;
+
+                // Push the new list onto the stack
+                Value val;
+                val.type = VAL_LIST;
+                val.as.list = new_list;
+                stack_push_value(vm, val);
+
+                break;
+            }
+            case OP_LIST_SUBLIST: {
+                Value length_val = stack_pop(vm);
+                Value start_val = stack_pop(vm);
+                Value source_list = stack_pop(vm);
+
+                if (source_list.type != VAL_LIST) {
+                    runtime_error("Cannot take sublist of non-list!");
+                }
+                if (start_val.type != VAL_INTEGER || length_val.type != VAL_INTEGER) {
+                    runtime_error("Start and length of sublist must be integers!");
+                }
+                if (start_val.as.integer < 0 || length_val.as.integer < 0) {
+                    runtime_error("Start and length of sublist may not be negative!");
+                }
+                if ((size_t)start_val.as.integer >= source_list.as.list->count) {
+                    runtime_error("Sublist start index out of bounds!");
+                }
+                if ((size_t)(start_val.as.integer + length_val.as.integer) > source_list.as.list->count) {
+                    runtime_error("Sublist length goes out of bounds!");
+                }
+
+                List *new_list = list_copy(source_list.as.list);
+                vm_register_list(vm, new_list);
+                new_list->count = (size_t)length_val.as.integer;
+                for (size_t i = 0; i < new_list->count; i++) {
+                    new_list->elements[i] = source_list.as.list->elements[(size_t)start_val.as.integer + i];
+                }
+
+                // Push the new list onto the stack
+                Value val;
+                val.type = VAL_LIST;
+                val.as.list = new_list;
+                stack_push_value(vm, val);
+
+                break;
+            }
+            case OP_LIST_REMOVE: {
+                Value index_val = stack_pop(vm);
+                Value source_list = stack_pop(vm);
+
+                if (source_list.type != VAL_LIST) {
+                    runtime_error("Cannot remove from non-list!");
+                }
+                if (index_val.type != VAL_INTEGER) {
+                    runtime_error("Index of list element to remove must be an integer!");
+                }
+                if (index_val.as.integer < 0 || (size_t)index_val.as.integer >= source_list.as.list->count) {
+                    runtime_error("Index of list element to remove is out of bounds!");
+                }
+
+                List *new_list = list_copy(source_list.as.list);
+                vm_register_list(vm, new_list);
+                size_t index = (size_t)index_val.as.integer;
+                for (size_t i = 0; i < source_list.as.list->count; i++) {
+                    if (i < index) {
+                        new_list->elements[i] = source_list.as.list->elements[i];
+                    }
+                    else if (i > index) {
+                        new_list->elements[i - 1] = source_list.as.list->elements[i];
+                    }
+                }
+                new_list->count--;
+
+                // Push the new list onto the stack
+                Value val;
+                val.type = VAL_LIST;
+                val.as.list = new_list;
+                stack_push_value(vm, val);
+
+                break;
+            }
+            case OP_LIST_SET: {
+                Value the_val = stack_pop(vm);
+                Value index_val = stack_pop(vm);
+                Value source_list = stack_pop(vm);
+
+                if (source_list.type != VAL_LIST) {
+                    runtime_error("Cannot list-set element of non-list!");
+                }
+                if (index_val.type != VAL_INTEGER) {
+                    runtime_error("Index of list element to set must be an integer!");
+                }
+                if (index_val.as.integer < 0 || (size_t)index_val.as.integer >= source_list.as.list->count) {
+                    runtime_error("Index of list element to set is out of bounds!");
+                }
+
+                List *new_list = list_copy(source_list.as.list);
+                vm_register_list(vm, new_list);
+                new_list->elements[(size_t)index_val.as.integer] = the_val;
+
+                // Push the new list onto the stack
+                Value val;
+                val.type = VAL_LIST;
+                val.as.list = new_list;
+                stack_push_value(vm, val);
+
+                break;
+            }
+            case OP_LIST_GET: {
+                Value index_val = stack_pop(vm);
+                Value source_list = stack_pop(vm);
+
+                if (source_list.type != VAL_LIST) {
+                    runtime_error("Cannot list-get element of non-list!");
+                }
+                if (index_val.type != VAL_INTEGER) {
+                    runtime_error("Index of list element to get must be an integer!");
+                }
+                if (index_val.as.integer < 0 || (size_t)index_val.as.integer >= source_list.as.list->count) {
+                    runtime_error("Index of list element to get is out of bounds!");
+                }
+
+                Value val = source_list.as.list->elements[(size_t)index_val.as.integer];
+                stack_push_value(vm, val);
+
+                break;
+            }
+            case OP_LIST_LEN: {
+                Value source_list = stack_pop(vm);
+
+                if (source_list.type != VAL_LIST) {
+                    runtime_error("Cannot get length of non-list!");
+                }
+
+                int len = (int)source_list.as.list->count;
+                stack_push_integer(vm, len);
+
                 break;
             }
             case OP_HALT: {

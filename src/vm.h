@@ -47,6 +47,12 @@ typedef enum {
     OP_JMP_IF_FALSE,// Pop an integer then a bool. If the bool is false, jump.
     OP_INT2FLOAT,   // Pop an int, push float representation of its value
     OP_FLOAT2INT,   // Pop a float, push integer representation of its value
+    OP_LIST_APPEND, // Pop a list and a value, push new list with the value appended to the end of the list
+    OP_LIST_SUBLIST,// Pop integer length, integer start, and a list. Push new list which is the sublist of the original based on these values.
+    OP_LIST_REMOVE, // Pop an integer and a list, push new list with the element at that index removed
+    OP_LIST_SET,    // Pop a value, an integer, and a list. Push a new list with the element at that index set to the value
+    OP_LIST_GET,    // Pop an integer and a list, push list element at that index
+    OP_LIST_LEN,    // Pop a list, push its integer length
     OP_HALT         // Stop execution
 } OpCode;
 
