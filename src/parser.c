@@ -15,6 +15,7 @@ void parser_error(char *msg) {
 Parser* parser_create(Lexer *lexer) {
     Parser *parser = malloc(sizeof(Parser));
     parser->lexer = lexer;
+    parser->debug = false;
     parser->current_token = lexer_next_token(lexer);
     return parser;
 }
@@ -145,6 +146,41 @@ ASTNode* parse_list_literal(Parser *parser) {
 
 // Parse a single expression (atom or list)
 ASTNode* parse_expr(Parser *parser) {
+    if (parser->debug) {
+        printf("\nToken details: ");
+        switch (parser->current_token.type) {
+            case TOKEN_INTEGER:
+                printf("Integer with value %d\n", parser->current_token.as.integer);
+                break;
+            case TOKEN_FLOAT:
+                printf("Float with value %f\n", parser->current_token.as.floating);
+                break;
+            case TOKEN_BOOL:
+                printf("Boolean with value %s\n", parser->current_token.as.boolean ? "true" : "false");
+                break;
+            case TOKEN_STRING:
+                printf("String with value \"%s\"\n", parser->current_token.as.string->data);
+                break;
+            case TOKEN_SYMBOL:
+                printf("Symbol with value %s\n", parser->current_token.as.symbol->data);
+                break;
+            case TOKEN_LPAREN:
+                printf("Left parenthesis\n");
+                break;
+            case TOKEN_RPAREN:
+                printf("Right parenthesis\n");
+                break;
+            case TOKEN_LIST_OPEN:
+                printf("List open\n");
+                break;
+            case TOKEN_LIST_CLOSE:
+                printf("List close\n");
+                break;
+            case TOKEN_EOF:
+                printf("End of file\n");
+                break;
+        }
+    }
     if (parser->current_token.type == TOKEN_EOF) {
         parser_error("Unexpected end of input");
     }

@@ -408,6 +408,7 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         codegen_function_exact_args(node, bbuf, symtable, OP_SUBSTR, "substr", 3);
     }
 
+    // char-at (get character from string)
     else if (strcmp(func_name->data, "char-at") == 0) {
         if (node->list.count != 3) {
             codegen_error("char-at expects exactly 2 arguments");

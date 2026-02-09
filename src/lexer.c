@@ -123,8 +123,20 @@ Token lexer_next_token(Lexer *lexer) {
         while (
             (lexer->input[lexer->pos] != QUOTE_CHAR || escape || (lexer->pos - start == 0))
         ) {
-            escape = false;
-            if (lexer->input[lexer->pos] == ESCAPE_CHAR) {
+            if (escape) {
+                if (
+                    lexer->input[lexer->pos] == ESCAPE_CHAR ||
+                    lexer->input[lexer->pos] == QUOTE_CHAR ||
+                    lexer->input[lexer->pos] == 'n' ||
+                    lexer->input[lexer->pos] == 't'
+                ) {
+                    // Valid escape sequence
+                    escape = false;
+                } else {
+                    lexer_error("Undefined escape sequence");
+                }
+            }
+            else if (lexer->input[lexer->pos] == ESCAPE_CHAR) {
                 escape = true;
             }
             else if (lexer->input[lexer->pos] == '\0') {

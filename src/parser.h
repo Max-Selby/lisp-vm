@@ -44,6 +44,7 @@ typedef struct {
 typedef struct {
     Lexer *lexer;
     Token current_token;
+    bool debug;
 } Parser;
 
 /**
