@@ -1,7 +1,7 @@
 
 # Built-in Functions
 
-Note that every function returns something; this is a rule for the language.
+Note that every function returns exactly one value; this is a rule for the language.
 
 ### import
 - Takes one argument, which should be a string filepath. Imports the code and runs it here. Errors on failure. Returns true.

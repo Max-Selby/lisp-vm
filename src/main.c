@@ -31,6 +31,10 @@ int main(int argc, char *argv[]) {
     vm->code = bbuf->instructions;
     vm_execute(vm);
 
+    if (vm->debug) {
+        printf("Stack size (SP location): %d\n", vm->sp);
+    }
+
     astprogram_free(program);
     bytecode_free(bbuf);
     symbol_table_free(symtable);

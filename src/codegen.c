@@ -132,6 +132,28 @@ static void codegen_function_twoplus_args(
     }
 }
 
+/**
+ * Compile a number of expressions from a list node, but delete all return values except the last.
+ */
+void compile_multiple_return_one(ASTNode *list_node, int list_idx_start, BytecodeBuf *bbuf, SymbolTable *symtable) {
+    if (list_node->type != AST_LIST) {
+        codegen_error("Expected AST_LIST node for multiple compilations");
+    }
+
+    if (list_idx_start >= list_node->list.count || list_idx_start < 0) {
+        codegen_error("list_idx_start out of bounds!!");
+    }
+
+    // Compile all but one, discarding results
+    for (int i = list_idx_start; i < list_node->list.count - 1; i++) {
+        codegen_compile_expr(list_node->list.children[i], bbuf, symtable);
+        bytecode_emit(bbuf, (Instruction){OP_DISCARD, {0}});
+    }
+
+    // Compile last and keep the result
+    codegen_compile_expr(list_node->list.children[list_node->list.count - 1], bbuf, symtable);
+}
+
 void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtable) {
     if (node->type != AST_LIST) {
         codegen_error("Expected AST_LIST node for function call");
@@ -188,11 +210,7 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
             codegen_error("do expects at least 1 argument");
         }
 
-        // Compile all expressions in sequence
-        for (int i = 1; i < node->list.count; i++) {
-            codegen_compile_expr(node->list.children[i], bbuf, symtable);
-        }
-        // (The value of the last expression will be the result)
+        compile_multiple_return_one(node, 1, bbuf, symtable);
     }
 
     // while (loop)
@@ -213,9 +231,7 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         bytecode_emit(bbuf, (Instruction){OP_JMP_IF_FALSE, {0}});
 
         // Compile body
-        for (int i = 2; i < node->list.count; i++) {
-            codegen_compile_expr(node->list.children[i], bbuf, symtable);
-        }
+        compile_multiple_return_one(node, 2, bbuf, symtable);
 
         // Jump back to loop start
         bytecode_emit(bbuf, (Instruction){OP_PUSH, {.type = VAL_INTEGER, .as.integer = loop_start_addr}});
