@@ -219,6 +219,9 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
             codegen_error("while expects at least 2 arguments");
         }
 
+        // Push false as initial return value (in case the loop never runs)
+        bytecode_emit(bbuf, (Instruction){OP_PUSH, {.type = VAL_BOOL, .as.boolean = false}});
+
         // Remember loop start address
         int loop_start_addr = bbuf->count;
 
@@ -229,6 +232,9 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         int jmp_false_insn_index = bbuf->count;
         bytecode_emit(bbuf, (Instruction){OP_HALT, {0}}); // Placeholder for jump address
         bytecode_emit(bbuf, (Instruction){OP_JMP_IF_FALSE, {0}});
+
+        // Discard previous iteration's result
+        bytecode_emit(bbuf, (Instruction){OP_DISCARD, {0}});
 
         // Compile body
         compile_multiple_return_one(node, 2, bbuf, symtable);

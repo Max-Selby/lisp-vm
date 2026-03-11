@@ -21,6 +21,7 @@ Note that every function returns exactly one value; this is a rule for the langu
 ### while
 - Syntax: (while cond expr1 expr2 ...)
 - Evaluates all expressions until cond is true (or does nothing if cond was true from the start).
+- Returns the final result of the last expression evaluated, or boolean value false if the loop didn't run.
 
 ### list
 - Create a list of the arguments. Can be empty.

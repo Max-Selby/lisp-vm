@@ -35,6 +35,32 @@ int main(int argc, char *argv[]) {
         printf("Stack size (SP location): %d\n", vm->sp);
     }
 
+    vm->debug = true;
+
+    // The stack having more/less values than the count of top level expressions is a major issue, so it should be reported.
+    if (vm->sp != program->count) {
+        for (int i = 0; i < 3; i++) {
+            printf(
+                "===========================================================================================================================\n"
+            );
+        }
+        printf(
+            "ERROR: after execution, stack does not have the expected number of values (sp: %d, expected: %d)! This is a compiler issue and must be fixed!\n",
+            vm->sp,
+            program->count
+        );
+        for (int i = 0; i < 3; i++) {
+            printf(
+                "===========================================================================================================================\n"
+            );
+        }
+
+        if (vm->debug) {
+            printf("-- Stack:\n");
+            print_stack(vm);
+        }
+    }
+
     astprogram_free(program);
     bytecode_free(bbuf);
     symbol_table_free(symtable);

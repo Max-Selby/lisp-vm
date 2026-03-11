@@ -138,4 +138,9 @@ void vm_free(VM *vm);
  */
 void vm_execute(VM *vm);
 
+/**
+ * Prints the stack
+ */
+void print_stack(VM *vm);
+
 #endif // VM_H

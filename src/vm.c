@@ -204,6 +204,32 @@ void print_list(List *list) {
     printf("]");
 }
 
+void print_stack(VM *vm) {
+    for (size_t i = 0; i < (size_t)vm->sp; i++) {
+        Value val = vm->stack[i];
+        switch (val.type) {
+            case VAL_INTEGER:
+                printf("integer: %d\n", val.as.integer);
+                break;
+            case VAL_FLOAT:
+                printf("float: %f\n", val.as.floating);
+                break;
+            case VAL_BOOL:
+                printf(val.as.boolean == true ? "boolean: true\n" : "boolean: false\n");
+                break;
+            case VAL_STRING:
+                // Surround string with quotes in this case to avoid confusion
+                printf("string: \"%s\"\n", val.as.string->data);
+                break;
+            case VAL_LIST:
+                printf("list: ");
+                print_list(val.as.list);
+                printf("\n");
+                break;
+        }
+    }
+}
+
 void vm_register_list(VM *vm, List *list) {
     if (vm->allocated_lists_count >= vm->allocated_lists_cap) {
         vm->allocated_lists_cap *= 2;
