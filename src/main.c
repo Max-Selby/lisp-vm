@@ -35,8 +35,6 @@ int main(int argc, char *argv[]) {
         printf("Stack size (SP location): %d\n", vm->sp);
     }
 
-    vm->debug = true;
-
     // The stack having more/less values than the count of top level expressions is a major issue, so it should be reported.
     if (vm->sp != program->count) {
         for (int i = 0; i < 3; i++) {

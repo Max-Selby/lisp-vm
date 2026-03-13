@@ -19,6 +19,22 @@ typedef enum {
     OP_MAKE_LIST,   // Pop n values and make list               (Operand is number of elements)
 
     // Does not use operand //
+
+    // Scopes & variables
+    OP_LOAD_BP,     // Pop two ints, push the value obtained at an offset from the base pointer. (first arg is offset, second is depth (0 = this scope, 1 = parent scope, etc.))
+    OP_ENTER_SCOPE, // Enter a new scope by pushing bp, then changing bp to the stack address of the pushed bp
+    OP_EXIT_SCOPE,  // Exit a scope: store the top stack value, pop everything up to bp, restore the old bp, and then push the top stack value back on the stack (in place of the now useless stored bp)
+
+    // Control
+    OP_HALT,        // Stop execution
+    OP_JMP,         // Pop an integer, jump to the instruction at that address
+    OP_JMP_IF,      // Pop an integer then a bool. If the bool is true, jump.
+    OP_JMP_IF_FALSE,// Pop an integer then a bool. If the bool is false, jump.
+    OP_DISCARD,     // Pop a value and do nothing with it
+    OP_DUP,         // Pop a value and push it twice
+    OP_SWAP,        // Pop two, push them so their order flips
+
+    // Standard
     OP_ADD,         // Pop two, push sum
     OP_SUB,         // Pop two, push second - first
     OP_MUL,         // Pop two, push product
@@ -29,31 +45,29 @@ typedef enum {
     OP_LOGIC_NOT,   // Pop a value, push !value
     OP_PRINT,       // Print top of stack
     OP_PRINTLN,     // Print top of stack and add newline
-    OP_CONCATSTR,   // Pop a & b, push string concatenation of b + a
-    OP_SUBSTR,      // Pop a, b, c, push substring of c starting at b, of length a
-    OP_DISCARD,     // Pop a value and do nothing with it
-    OP_DUP,         // Pop a value and push it twice
-    OP_SWAP,        // Pop two, push them so their order flips
     OP_EQ,          // Pop two numbers, push boolean second == first
     OP_NEQ,         // Pop two numbers, push boolean second != first
     OP_LT,          // Pop two numbers, push boolean second < first
     OP_LTE,         // Pop two numbers, push boolean second <= first
     OP_GT,          // Pop two numbers, push boolean second > first
     OP_GTE,         // Pop two numbers, push boolean second >= first
-    OP_STR_EQ,      // Pop two, push boolean true if they are equivalent strings, else push false.
-    OP_STRLEN,      // Pop a string, push its integer length
-    OP_JMP,         // Pop an integer, jump to the instruction at that address
-    OP_JMP_IF,      // Pop an integer then a bool. If the bool is true, jump.
-    OP_JMP_IF_FALSE,// Pop an integer then a bool. If the bool is false, jump.
     OP_INT2FLOAT,   // Pop an int, push float representation of its value
     OP_FLOAT2INT,   // Pop a float, push integer representation of its value
+
+    // Strings
+    OP_CONCATSTR,   // Pop a & b, push string concatenation of b + a
+    OP_SUBSTR,      // Pop a, b, c, push substring of c starting at b, of length a
+    OP_STR_EQ,      // Pop two, push boolean true if they are equivalent strings, else push false.
+    OP_STRLEN,      // Pop a string, push its integer length
+
+    // Lists
     OP_LIST_APPEND, // Pop a list and a value, push new list with the value appended to the end of the list
     OP_LIST_SUBLIST,// Pop integer length, integer start, and a list. Push new list which is the sublist of the original based on these values.
     OP_LIST_REMOVE, // Pop an integer and a list, push new list with the element at that index removed
     OP_LIST_SET,    // Pop a value, an integer, and a list. Push a new list with the element at that index set to the value
     OP_LIST_GET,    // Pop an integer and a list, push list element at that index
-    OP_LIST_LEN,    // Pop a list, push its integer length
-    OP_HALT         // Stop execution
+    OP_LIST_LEN     // Pop a list, push its integer length
+
 } OpCode;
 
 /**
@@ -112,12 +126,14 @@ typedef struct {
     List **allocated_lists; // Lists allocated by the VM (for cleanup purposes)
     size_t allocated_lists_count;
     size_t allocated_lists_cap;
-    
+
     Instruction *code;
     int pc; // Program counter
-    
+
+    int bp; // Base pointer
+
     bool debug; // If true print debug info
-    
+
     String **strings; // Strings in use by the VM
     size_t strings_count; // Number of strings in use
     size_t strings_cap; // Capacity of strings array

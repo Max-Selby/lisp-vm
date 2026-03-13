@@ -14,7 +14,7 @@ VM* vm_create() {
     vm->stack_cap = 256;
     vm->stack = malloc(sizeof(Value) * vm->stack_cap);
     vm->sp = 0;
-    
+
     vm->globals_cap = 8;
     vm->globals = malloc(sizeof(Value) * vm->globals_cap);
 
@@ -23,13 +23,15 @@ VM* vm_create() {
     vm->allocated_lists = malloc(sizeof(List*) * vm->allocated_lists_cap);
 
     vm->pc = 0;
-    
+
+    vm->bp = -1; // bp of -1 means we are at top level
+
     vm->debug = false;
-    
+
     vm->strings_cap = 8;
     vm->strings_count = 0;
     vm->strings = malloc(sizeof(String*) * vm->strings_cap);
-    
+
     return vm;
 }
 
@@ -273,6 +275,74 @@ void vm_execute(VM *vm) {
         switch (instruction.opCode) {
             case OP_PUSH: {
                 stack_push_value(vm, instruction.operand);
+                break;
+            }
+            case OP_LOAD_BP: {
+                Value offset = stack_pop(vm);
+                Value depth = stack_pop(vm);
+
+                if (
+                    offset.type != VAL_INTEGER || offset.as.integer == 0 ||
+                    depth.type != VAL_INTEGER || depth.as.integer < 0
+                ) {
+                    runtime_error("LOAD_BP got invalid depth/offset!");
+                }
+                
+                int scope_bp = vm->bp;
+                int i_depth = depth.as.integer;
+
+                // Traverse saved bp values to find stack frame at correct depth
+                while (i_depth > 0) {
+                    if (scope_bp == -1) {
+                        runtime_error("LOAD_BP got depth past top-level scope!");
+                    }
+                    if (scope_bp < -1) {
+                        runtime_error("LOAD_BP got invalid bp!");
+                    }
+
+                    // Read saved bp value
+                    Value new_bp_val = vm->stack[scope_bp];
+                    if (new_bp_val.type != VAL_INTEGER || new_bp_val.as.integer < -1) {
+                        runtime_error("LOAD_BP discovered invalid bp!");
+                    }
+                    scope_bp = new_bp_val.as.integer;
+                    i_depth--;
+                }
+
+                // Push the value once it is found
+                Value local = vm->stack[scope_bp + offset.as.integer];
+                stack_push_value(vm, local);
+                break;
+            }
+            case OP_ENTER_SCOPE: {
+                // Push bp
+                Value val = (Value){.type = VAL_INTEGER, .as.integer = vm->bp};
+                stack_push_value(vm, val);
+
+                // Set bp to where bp was pushed
+                vm->bp = vm->sp - 1;
+                break;
+            }
+            case OP_EXIT_SCOPE: {
+                if (vm->bp == -1) {
+                    runtime_error("Tried to exit top-level scope!");
+                }
+
+                // Get function result (store top stack value)
+                Value result = stack_pop(vm);
+
+                // "Pop" everything up to bp
+                vm->sp = vm->bp;
+
+                // Restore old bp
+                Value oldbp = vm->stack[vm->sp];
+                if (oldbp.type != VAL_INTEGER || (oldbp.as.integer < 0 && oldbp.as.integer != -1)) { // -1 is valid, means top level
+                    runtime_error("Stored bp was corrupted!");
+                }
+                vm->bp = oldbp.as.integer;
+
+                // Push the old result on top of the now useless stored bp
+                stack_push_value(vm, result);
                 break;
             }
             case OP_LOAD_VAR: {
