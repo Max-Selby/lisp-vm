@@ -170,6 +170,11 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
     }
     String *func_name = func_node->symbol;
 
+    // TODO: For implementing custom functions: if they need arguments, this is where those should go (right before enter scope)
+
+    // Enter scope
+    bytecode_emit(bbuf, (Instruction){OP_ENTER_SCOPE, {0}});
+
 
     //////////////////////////////////////////////////////////
     //////////////// Base functions supported ////////////////
@@ -200,8 +205,6 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         store_insn.operand.type = VAL_INTEGER;
         store_insn.operand.as.integer = location;
         bytecode_emit(bbuf, store_insn);
-
-        return;
     }
 
     // do (sequence of expressions)
@@ -500,14 +503,17 @@ void codegen_function_call(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtab
         codegen_function_exact_args(node, bbuf, symtable, OP_FLOAT2INT, "float2int", 1);
     }
 
-
-
     // Unsupported function
     else {
         char err_msg[256];
         snprintf(err_msg, sizeof(err_msg), "Unsupported function call: %s\n", func_name->data);
         codegen_error(err_msg);
     }
+
+
+    // Exit scope
+    bytecode_emit(bbuf, (Instruction){OP_EXIT_SCOPE, {0}});
+
 }
 
 void codegen_compile_expr(ASTNode *node, BytecodeBuf *bbuf, SymbolTable *symtable) {
